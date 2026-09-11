@@ -25,19 +25,6 @@ sudo bash install.sh
 
 ---
 
-## 🚀 গিটহাবে আপলোড করার নিয়ম (GitHub Upload Guide)
-
-```bash
-git init
-git add .
-git commit -m "Initial commit of AllSee ASL Web Controller"
-git branch -M main
-git remote add origin https://github.com/s21sim/allsee.git
-git push -u origin main
-```
-
----
-
 ## 📂 ফাইলসমূহের বিবরণ (File Structure)
 
 - `index.html`: রেসপনসিভ ডার্ক-মোড ইউজার ইন্টারফেস ও লাইভ কনসোল
