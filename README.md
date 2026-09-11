@@ -7,10 +7,10 @@ AllStarLink (ASL) রেডিও নোড কন্ট্রোল করা�
 আপনার AllStarLink / Raspberry Pi / Debian সার্ভারের টার্মিনালে নিচের এক লাইনের কমান্ডটি রান করুন:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/ssniloy-bd/allsee/main/install.sh | sudo bash
+curl -sSL https://raw.githubusercontent.com/s21sim/allsee/main/install.sh | sudo bash
 ```
 
-> **নোট:** ইনস্টলেশন সম্পন্ন হলে স্ক্রিনে আপনার নোডের সরাসরি লিংক দেখানো হবে (যেমন: `http://192.168.1.50/allsee`)।
+> **নোট:** ইনস্টলেশন সম্পন্ন হলে স্ক্রিনে আপনার নোডের সরাসরি লিংক দেখানো হবে (যেমন: `http://192.168.0.249/allsee`)।
 
 ---
 
@@ -18,7 +18,7 @@ curl -sSL https://raw.githubusercontent.com/ssniloy-bd/allsee/main/install.sh | 
 
 ```bash
 cd /tmp
-git clone https://github.com/ssniloy-bd/allsee.git
+git clone https://github.com/s21sim/allsee.git
 cd allsee
 sudo bash install.sh
 ```
@@ -32,7 +32,7 @@ git init
 git add .
 git commit -m "Initial commit of AllSee ASL Web Controller"
 git branch -M main
-git remote add origin https://github.com/ssniloy-bd/allsee.git
+git remote add origin https://github.com/s21sim/allsee.git
 git push -u origin main
 ```
 
