@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AllSee - AllStarLink Node Web Controller</title>
+  <meta name="description" content="Lightweight modern dark-theme web controller for AllStarLink (ASL) radio nodes with live Asterisk CLI console.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a0d14;
+      --card-bg: #111726;
+      --card-border: #1e293b;
+      --input-bg: #090d16;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent-green: #10b981;
+      --accent-cyan: #06b6d4;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --accent-blue: #3b82f6;
+      --console-bg: #030712;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.5;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 24px 16px;
+      flex: 1;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--card-border);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #10b981, #06b6d4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #030712;
+      font-weight: 800;
+      font-size: 20px;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+    }
+
+    .brand-text h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+
+    .brand-text p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--accent-green);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--accent-green);
+      box-shadow: 0 0 8px var(--accent-green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.4; }
+      100% { opacity: 1; }
+    }
+
+    /* Main Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    @media (min-width: 768px) {
+      .grid-2col {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Input Groups */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    .form-control {
+      width: 100%;
+      background-color: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 1.1rem;
+      font-family: 'Fira Code', monospace;
+      color: #fff;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15);
+    }
+
+    .input-hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 5px;
+    }
+
+    /* Button Grid */
+    .button-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    .btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      filter: brightness(1.1);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-connect {
+      background-color: #065f46;
+      border-color: #10b981;
+      color: #ecfdf5;
+    }
+
+    .btn-monitor {
+      background-color: #164e63;
+      border-color: #06b6d4;
+      color: #ecfeff;
+    }
+
+    .btn-disconnect {
+      background-color: #78350f;
+      border-color: #f59e0b;
+      color: #fffbeb;
+    }
+
+    .btn-disconnect-all {
+      background-color: #7f1d1d;
+      border-color: #ef4444;
+      color: #fef2f2;
+      grid-column: span 2;
+    }
+
+    .btn-status {
+      background-color: #1e3a8a;
+      border-color: #3b82f6;
+      color: #eff6ff;
+    }
+
+    .btn-nodes {
+      background-color: #312e81;
+      border-color: #6366f1;
+      color: #eef2ff;
+    }
+
+    /* Terminal Console */
+    .console-card {
+      background-color: var(--console-bg);
+      border: 1px solid #1f293d;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 20px;
+      box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8), 0 8px 24px rgba(0, 0, 0, 0.6);
+    }
+
+    .console-header {
+      background-color: #0b1120;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #1f293d;
+    }
+
+    .console-title {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .console-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .console-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .dot-red { background-color: #ef4444; }
+    .dot-yellow { background-color: #f59e0b; }
+    .dot-green { background-color: #10b981; }
+
+    .console-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-small {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #cbd5e1;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .btn-small:hover {
+      background: #334155;
+      color: #fff;
+    }
+
+    .console-body {
+      padding: 16px;
+      min-height: 220px;
+      max-height: 380px;
+      overflow-y: auto;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: #e2e8f0;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .log-line {
+      margin-bottom: 4px;
+    }
+
+    .log-ts {
+      color: #475569;
+      user-select: none;
+    }
+
+    .log-cmd {
+      color: var(--accent-cyan);
+      font-weight: 600;
+    }
+
+    .log-out {
+      color: #a7f3d0;
+    }
+
+    .log-err {
+      color: #fca5a5;
+    }
+
+    .log-info {
+      color: #93c5fd;
+    }
+
+    /* Custom DTMF Row */
+    .dtmf-section {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--card-border);
+    }
+
+    .dtmf-input-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-dtmf {
+      background-color: #334155;
+      border: 1px solid #475569;
+      color: #fff;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px 0;
+      font-size: 0.75rem;
+      color: #64748b;
+      border-top: 1px solid var(--card-border);
+      margin-top: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="brand-icon">ASL</div>
+        <div class="brand-text">
+          <h1>AllSee Node Controller</h1>
+          <p>AllStarLink Web Management &amp; Asterisk CLI</p>
+        </div>
+      </div>
+      <div id="statusBadge" class="status-badge">
+        <span class="status-dot"></span>
+        <span id="statusText">Asterisk Ready</span>
+      </div>
+    </header>
+
+    <div class="grid grid-2col">
+      <div class="card">
+        <div class="card-title"><span>📻</span> Node Configuration</div>
+
+        <div class="form-group">
+          <label for="localNode">Local Node (Host)</label>
+          <input type="number" id="localNode" class="form-control" placeholder="e.g. 1999 or 54321" />
+          <div class="input-hint">Your station's configured node number on this server</div>
+        </div>
+
+        <div class="form-group">
+          <label for="targetNode">Target Node (Remote)</label>
+          <input type="number" id="targetNode" class="form-control" placeholder="e.g. 27225 or 9100" />
+          <div class="input-hint">Node to connect, monitor, or disconnect</div>
+        </div>
+
+        <div class="dtmf-section">
+          <label for="customDtmf" style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 6px;">
+            Custom DTMF Command (e.g. *81 for Time, *73 Permanent)
+          </label>
+          <div class="dtmf-input-group">
+            <input type="text" id="customDtmf" class="form-control" placeholder="*81" style="font-size: 0.95rem; padding: 8px 12px;" />
+            <button id="btnCustom" class="btn btn-dtmf btn-small" type="button" style="padding: 8px 14px;">Send DTMF</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>⚡</span> Quick Control Actions</div>
+
+        <div class="button-grid">
+          <button id="btnConnect" class="btn btn-connect" type="button"><span>🔗</span> Connect (*3)</button>
+          <button id="btnMonitor" class="btn btn-monitor" type="button"><span>🎧</span> Monitor (*2)</button>
+          <button id="btnDisconnect" class="btn btn-disconnect" type="button"><span>✂️</span> Disconnect (*1)</button>
+          <button id="btnStatus" class="btn btn-status" type="button"><span>📊</span> Check Status (*70)</button>
+          <button id="btnNodes" class="btn btn-nodes" type="button" style="grid-column: span 2;"><span>📋</span> List Connected Nodes (rpt nodes)</button>
+          <button id="btnDisconnectAll" class="btn btn-disconnect-all" type="button"><span>🛑</span> Disconnect All (*76)</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="console-card">
+      <div class="console-header">
+        <div class="console-title">
+          <div class="console-dots">
+            <div class="console-dot dot-red"></div>
+            <div class="console-dot dot-yellow"></div>
+            <div class="console-dot dot-green"></div>
+          </div>
+          <span>ASTERISK CLI LIVE CONSOLE</span>
+        </div>
+        <div class="console-actions">
+          <button id="btnClearConsole" class="btn-small" type="button">Clear</button>
+          <button id="btnCopyConsole" class="btn-small" type="button">Copy Output</button>
+        </div>
+      </div>
+      <div id="consoleBody" class="console-body">
+        <div class="log-line log-info"><span class="log-ts">[SYSTEM]</span> AllSee Web Controller initialized.</div>
+        <div class="log-line log-info"><span class="log-ts">[SYSTEM]</span> Ready to dispatch commands to Asterisk CLI (app_rpt).</div>
+      </div>
+    </div>
+
+    <footer>
+      AllSee Web Controller &bull; Designed for AllStarLink Asterisk Radio Nodes &bull; URI: <code>http://&lt;node-ip&gt;/allsee</code>
+    </footer>
+  </div>
+
+  <script>
+    const localNodeInput = document.getElementById('localNode');
+    const targetNodeInput = document.getElementById('targetNode');
+    const customDtmfInput = document.getElementById('customDtmf');
+    const consoleBody = document.getElementById('consoleBody');
+    const statusText = document.getElementById('statusText');
+
+    const savedLocalNode = localStorage.getItem('allsee_local_node');
+    if (savedLocalNode) localNodeInput.value = savedLocalNode;
+    localNodeInput.addEventListener('change', () => {
+      if (localNodeInput.value) localStorage.setItem('allsee_local_node', localNodeInput.value.trim());
+    });
+
+    function appendLog(text, type = 'out') {
+      const timeStr = new Date().toTimeString().split(' ')[0];
+      const div = document.createElement('div');
+      div.className = `log-line log-${type}`;
+      div.innerHTML = `<span class="log-ts">[${timeStr}] </span><span>${escapeHtml(text)}</span>`;
+      consoleBody.appendChild(div);
+      consoleBody.scrollTop = consoleBody.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function setLoading(isLoading) {
+      document.querySelectorAll('.btn').forEach(btn => btn.disabled = isLoading);
+      statusText.textContent = isLoading ? 'Executing CLI...' : 'Asterisk Ready';
+    }
+
+    async function sendCommand(action, params = {}) {
+      const localNode = localNodeInput.value.trim();
+      if (!localNode) {
+        appendLog('ERROR: Please enter your Local Node number first.', 'err');
+        localNodeInput.focus();
+        return;
+      }
+
+      setLoading(true);
+      const payload = { action, local_node: localNode, ...params };
+      appendLog(`> Sending [${action.toUpperCase()}] request to Asterisk backend...`, 'cmd');
+
+      try {
+        const response = await fetch('api.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        if (result.success) {
+          if (result.data?.asl_command) appendLog(`Command: ${result.data.asl_command}`, 'cmd');
+          appendLog(result.data?.cli_output || result.message || 'Success', 'out');
+        } else {
+          appendLog(`ERROR: ${result.message || 'Execution failed'}`, 'err');
+          if (result.data?.cli_output) appendLog(result.data.cli_output, 'err');
+        }
+      } catch (err) {
+        appendLog(`NETWORK/SERVER ERROR: ${err.message}`, 'err');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    document.getElementById('btnConnect').onclick = () => {
+      const t = targetNodeInput.value.trim();
+      if (!t) return appendLog('ERROR: Target Node is required for Connect (*3).', 'err');
+      sendCommand('connect', { target_node: t });
+    };
+
+    document.getElementById('btnMonitor').onclick = () => {
+      const t = targetNodeInput.value.trim();
+      if (!t) return appendLog('ERROR: Target Node is required for Monitor (*2).', 'err');
+      sendCommand('monitor', { target_node: t });
+    };
+
+    document.getElementById('btnDisconnect').onclick = () => {
+      const t = targetNodeInput.value.trim();
+      if (!t) return appendLog('ERROR: Target Node is required for Disconnect (*1).', 'err');
+      sendCommand('disconnect', { target_node: t });
+    };
+
+    document.getElementById('btnDisconnectAll').onclick = () => {
+      if (confirm('Disconnect ALL active node links (*76)?')) sendCommand('disconnect_all');
+    };
+
+    document.getElementById('btnStatus').onclick = () => sendCommand('status');
+    document.getElementById('btnNodes').onclick = () => sendCommand('nodes');
+    document.getElementById('btnCustom').onclick = () => {
+      const dtmf = customDtmfInput.value.trim();
+      if (!dtmf) return appendLog('ERROR: Enter a DTMF code (e.g. *81).', 'err');
+      sendCommand('custom_dtmf', { custom_dtmf: dtmf });
+    };
+
+    document.getElementById('btnClearConsole').onclick = () => {
+      consoleBody.innerHTML = '';
+      appendLog('Console cleared.', 'info');
+    };
+
+    document.getElementById('btnCopyConsole').onclick = () => {
+      navigator.clipboard.writeText(consoleBody.innerText).then(() => {
+        appendLog('[SYSTEM] Console output copied to clipboard.', 'info');
+      });
+    };
+  </script>
+</body>
+</html>
