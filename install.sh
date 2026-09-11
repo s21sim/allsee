@@ -29,6 +29,7 @@ fi
 TARGET_DIR="/var/www/html/allsee"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SUDOERS_FILE="/etc/sudoers.d/allsee"
+GH_USER="${GITHUB_USER:-s21sim}"
 
 # 1. Install Apache2 & PHP if not present
 echo -e "${YELLOW}[1/5] Checking Apache & PHP packages...${NC}"
@@ -58,9 +59,24 @@ elif [ -f "$SCRIPT_DIR/index.html" ] && [ -f "$SCRIPT_DIR/api.php" ]; then
     cp -v "$SCRIPT_DIR/index.html" "$TARGET_DIR/"
     cp -v "$SCRIPT_DIR/api.php" "$TARGET_DIR/"
 else
-    GITHUB_RAW_URL="${ALLSEE_REPO_RAW:-https://raw.githubusercontent.com/ssniloy-bd/allsee/main/allsee}"
-    curl -sSL "${GITHUB_RAW_URL}/index.html" -o "$TARGET_DIR/index.html"
-    curl -sSL "${GITHUB_RAW_URL}/api.php" -o "$TARGET_DIR/api.php"
+    echo -e "${CYAN}Downloading latest files from github.com/${GH_USER}/allsee...${NC}"
+    DOWNLOAD_SUCCESS=0
+    for BASE_URL in         "https://raw.githubusercontent.com/${GH_USER}/allsee/main"         "https://raw.githubusercontent.com/${GH_USER}/allsee/main/allsee"         "https://raw.githubusercontent.com/${GH_USER}/allsee/master"         "https://raw.githubusercontent.com/${GH_USER}/allsee/master/allsee"; do
+        
+        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${BASE_URL}/index.html" || true)
+        if [ "$HTTP_STATUS" = "200" ]; then
+            echo -e "${GREEN}Found valid repository source at: ${BASE_URL}${NC}"
+            curl -sSL "${BASE_URL}/index.html" -o "$TARGET_DIR/index.html"
+            curl -sSL "${BASE_URL}/api.php" -o "$TARGET_DIR/api.php"
+            DOWNLOAD_SUCCESS=1
+            break
+        fi
+    done
+
+    if [ "$DOWNLOAD_SUCCESS" -ne 1 ]; then
+        echo -e "${RED}[ERROR] Could not fetch valid index.html from https://github.com/${GH_USER}/allsee${NC}"
+        exit 1
+    fi
 fi
 
 # 4. Configure Sudoers for Asterisk CLI
