@@ -38,6 +38,28 @@ sudo bash install.sh
 
 ---
 
+## 🚀 গিটহাবে আপলোড করার নিয়ম (GitHub Upload Guide)
+
+আপনার লোকাল মেশিনে ফাইলগুলো নিয়ে নতুন গিট রিপোজিটরি তৈরি ও পুশ করার নিয়ম:
+
+```bash
+# রিপোজিটরি ইনিশিয়ালাইজ করুন
+git init
+git add .
+git commit -m "Initial commit of AllSee ASL Web Controller"
+
+# মেইন ব্রাঞ্চ সেট করুন
+git branch -M main
+
+# আপনার গিটহাব রিপোজিটরির লিংক যুক্ত করুন
+git remote add origin https://github.com/s21sim/allsee.git
+
+# কোড পুশ করুন
+git push -u origin main
+```
+
+---
+
 ## 📂 ফাইলসমূহের বিবরণ (File Structure)
 
 ```text
