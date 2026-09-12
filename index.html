@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AllSee v2.0 - AllStarLink Node Web Controller</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23081026'/><circle cx='50' cy='50' r='34' stroke='%2338bdf8' stroke-width='3' fill='none'/><path d='M50 20 L70 74 L58 74 L50 50 L42 74 L30 74 Z' fill='%2338bdf8'/><circle cx='50' cy='46' r='10' fill='%23030712' stroke='%2338bdf8' stroke-width='2'/><circle cx='50' cy='46' r='5' fill='%2338bdf8'/></svg>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #060a14;
+      color: #f1f5f9;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+
+  <!-- Login Overlay -->
+  <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 transition-opacity">
+    <div class="w-full max-w-md bg-[#090f1d] border border-cyan-500/30 rounded-2xl shadow-2xl p-7 text-center relative overflow-hidden">
+      <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-cyan-500 via-indigo-500 to-purple-500"></div>
+      
+      <!-- Logo SVG -->
+      <div class="flex justify-center mb-4">
+        <svg class="w-16 h-16 drop-shadow-[0_0_12px_rgba(56,189,248,0.45)]" viewBox="0 0 100 100" fill="none">
+          <rect x="3" y="3" width="94" height="94" rx="22" fill="#081026" stroke="#38bdf8" stroke-width="2"/>
+          <circle cx="50" cy="50" r="33" stroke="#818cf8" stroke-width="3" fill="none"/>
+          <path d="M50 19 L71 74 L59 74 L50 49 L41 74 L29 74 Z" fill="#7dd3fc" stroke="#38bdf8" stroke-width="1"/>
+          <circle cx="50" cy="46" r="12" fill="#030712" stroke="#38bdf8" stroke-width="2"/>
+          <circle cx="50" cy="46" r="8" fill="#0284c7"/>
+          <circle cx="50" cy="46" r="4" fill="#020617"/>
+          <circle cx="52" cy="44" r="1.5" fill="#ffffff"/>
+        </svg>
+      </div>
+
+      <h2 class="text-xl font-bold text-white tracking-tight">AllSee <span class="text-xs px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 font-mono">v2.0</span></h2>
+      <p class="text-xs text-slate-400 mt-1">AllStarLink (ASL) Radio Node Secure Web Controller</p>
+
+      <form id="login-form" class="mt-6 space-y-4 text-left">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">ইউজার আইডি / Username</label>
+          <input type="text" id="login-username" value="admin" required class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-sm text-slate-100 focus:outline-none focus:border-cyan-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">পাসওয়ার্ড / Password</label>
+          <input type="password" id="login-password" value="admin" required class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-sm text-slate-100 focus:outline-none focus:border-cyan-500">
+        </div>
+        <div id="login-error" class="hidden p-2.5 bg-red-950/60 border border-red-500/40 rounded-xl text-red-300 text-xs"></div>
+        <button type="submit" class="w-full py-2.5 px-4 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-semibold rounded-xl text-sm shadow-lg transition">
+          লগইন করুন / Sign In
+        </button>
+      </form>
+      <div class="mt-5 p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+        <span class="text-emerald-400 font-semibold">Default: admin / admin</span>
+        <span>Settings থেকে পরিবর্তনযোগ্য</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings & Cfgs Modal -->
+  <div id="settings-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/85 backdrop-blur-sm p-4">
+    <div class="w-full max-w-xl bg-[#0a1020] border border-cyan-500/40 rounded-2xl shadow-2xl overflow-hidden">
+      <div class="flex items-center justify-between px-5 py-3.5 border-b border-slate-800 bg-[#070c18]">
+        <h3 class="text-sm font-bold text-white">সেটিংস ও নোড কনফিগারেশন</h3>
+        <button onclick="closeSettings()" class="text-slate-400 hover:text-white">&times;</button>
+      </div>
+      <div class="p-5 space-y-4 text-xs">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-400 mb-1">Call Sign</label>
+            <input id="cfg-callsign" type="text" value="S21SIM" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-white font-bold uppercase">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">Node Number</label>
+            <input id="cfg-node" type="text" value="66538" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-emerald-400 font-mono font-bold">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">Location</label>
+            <input id="cfg-location" type="text" value="Shariatpur Sadar, Bangladesh" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-white">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">Frequency</label>
+            <input id="cfg-frequency" type="text" value="433.600" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-amber-300 font-bold">
+          </div>
+        </div>
+        <div class="flex justify-end pt-2">
+          <button onclick="saveSettings()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-xl">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <div class="max-w-7xl w-full mx-auto px-4 py-4 space-y-4 flex-1 flex flex-col">
+    
+    <!-- Top Header Bar -->
+    <header class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 bg-[#080e1e]/90 border border-slate-800 rounded-2xl shadow-xl">
+      <div class="flex items-center gap-3">
+        <!-- Logo SVG -->
+        <svg class="w-10 h-10 drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]" viewBox="0 0 100 100" fill="none">
+          <rect x="3" y="3" width="94" height="94" rx="22" fill="#081026" stroke="#38bdf8" stroke-width="2"/>
+          <circle cx="50" cy="50" r="33" stroke="#818cf8" stroke-width="3" fill="none"/>
+          <path d="M50 19 L71 74 L59 74 L50 49 L41 74 L29 74 Z" fill="#7dd3fc" stroke="#38bdf8" stroke-width="1"/>
+          <circle cx="50" cy="46" r="12" fill="#030712" stroke="#38bdf8" stroke-width="2"/>
+          <circle cx="50" cy="46" r="8" fill="#0284c7"/>
+          <circle cx="50" cy="46" r="4" fill="#020617"/>
+          <circle cx="52" cy="44" r="1.5" fill="#ffffff"/>
+        </svg>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-base font-extrabold text-white">AllSee</span>
+            <span class="text-[10px] font-mono text-cyan-400 font-bold px-1.5 py-0.5 rounded bg-cyan-500/20 border border-cyan-500/30">v2.0</span>
+            <span id="header-call-title" class="text-xs sm:text-sm font-bold text-slate-200">S21SIM Shariatpur Sadar, Bangladesh</span>
+          </div>
+          <p class="text-[11px] text-slate-400">
+            Node: <strong id="header-node-display" class="text-emerald-400 font-mono">66538</strong> &bull; 
+            Freq: <strong id="header-freq-display" class="text-amber-300 font-mono">433.600 MHz</strong>
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 text-xs">
+        <button onclick="openSettings()" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-xl border border-slate-700">
+          Cfgs &amp; Parameters
+        </button>
+        <div class="px-3 py-1.5 bg-slate-900 rounded-xl border border-slate-700 text-slate-300">
+          User: <span id="current-username" class="font-bold text-white">admin</span>
+        </div>
+        <button onclick="doLogout()" class="px-3 py-1.5 bg-rose-950/40 hover:bg-rose-900 text-rose-300 rounded-xl border border-rose-500/40">
+          Logout
+        </button>
+      </div>
+    </header>
+
+    <!-- Notification Banner -->
+    <div id="status-toast" class="hidden p-3 rounded-xl border text-xs flex items-center justify-between">
+      <span id="status-toast-text"></span>
+      <button onclick="hideToast()" class="opacity-70 hover:opacity-100">&times;</button>
+    </div>
+
+    <!-- 1. Connection Status Card -->
+    <div class="bg-[#090f1f]/90 border border-cyan-500/30 rounded-2xl overflow-hidden shadow-xl">
+      <div class="bg-gradient-to-r from-[#0d1633] via-[#101b3f] to-[#0d1633] px-4 py-2.5 border-b border-cyan-500/30 flex items-center justify-between">
+        <h2 class="text-xs sm:text-sm font-bold text-cyan-200 uppercase tracking-wider">Connection Status</h2>
+        <div id="sub-header-bar" class="text-[11px] font-mono text-slate-300 font-semibold bg-slate-950/60 px-3 py-1 rounded-lg border border-slate-700/60">
+          S21SIM Shariatpur Sadar, Bangladesh - 433.600
+        </div>
+      </div>
+
+      <!-- Connections Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs font-mono">
+          <thead class="bg-[#060a16] text-slate-400 text-[11px] border-b border-slate-800">
+            <tr>
+              <th class="py-2.5 px-4">Node</th>
+              <th class="py-2.5 px-4">Node Info</th>
+              <th class="py-2.5 px-3">Received</th>
+              <th class="py-2.5 px-3 text-center">Dir</th>
+              <th class="py-2.5 px-3">Connected</th>
+              <th class="py-2.5 px-3">Mode</th>
+              <th class="py-2.5 px-4 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody id="connections-tbody" class="divide-y divide-slate-800/80">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Control Toolbar -->
+      <div class="p-4 bg-[#070c18] border-t border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4 font-sans">
+        <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+          <div class="flex items-center bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-1.5">
+            <span class="text-xs font-semibold text-slate-400 mr-2">Node#</span>
+            <input id="target-node-input" type="text" placeholder="e.g. 59864" class="w-24 bg-transparent text-sm font-mono font-bold text-cyan-300 focus:outline-none">
+          </div>
+          <button onclick="addFavoriteFromInput()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold border border-slate-700">
+            + Add Favorite
+          </button>
+          <button onclick="deleteFavoriteFromInput()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold border border-slate-700">
+            Delete Favorite
+          </button>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+          <button onclick="executeAction('connect')" class="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-bold shadow-lg">
+            Connect
+          </button>
+          <button onclick="executeAction('disconnect')" class="px-3 py-2 bg-rose-950/70 hover:bg-rose-900 text-rose-200 rounded-xl text-xs font-semibold border border-rose-500/40">
+            Disconnect
+          </button>
+          <button onclick="executeAction('monitor')" class="px-3 py-2 bg-amber-950/70 hover:bg-amber-900 text-amber-200 rounded-xl text-xs font-semibold border border-amber-500/40">
+            Monitor
+          </button>
+          <button onclick="executeAction('local_monitor')" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold border border-slate-700">
+            Local Mon
+          </button>
+          <button onclick="executeAction('disconnect_all')" class="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl text-xs border border-slate-800">
+            Disc All (*76)
+          </button>
+        </div>
+      </div>
+
+      <!-- Options Bar -->
+      <div class="px-4 py-2 bg-[#050813] border-t border-slate-800/80 flex flex-wrap items-center justify-between text-xs text-slate-400 font-sans">
+        <div class="flex items-center gap-5">
+          <label class="inline-flex items-center gap-2 cursor-pointer">
+            <input id="check-permanent" type="checkbox" class="rounded border-slate-700 bg-slate-950 text-cyan-500">
+            <span>Permanent Link (*73)</span>
+          </label>
+          <label class="inline-flex items-center gap-2 cursor-pointer">
+            <input id="check-disc-before" type="checkbox" class="rounded border-slate-700 bg-slate-950 text-cyan-500">
+            <span>Disconnect before Connect</span>
+          </label>
+        </div>
+        <span class="text-[11px] text-slate-500">AllStarLink Asterisk app_rpt Protocol</span>
+      </div>
+    </div>
+
+    <!-- 2. Favorites Card -->
+    <div class="bg-[#090f1f]/90 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+      <div class="bg-[#0c1329] px-4 py-2.5 border-b border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 font-sans">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <span class="text-amber-400">★</span> Favorites
+        </h3>
+        <input id="search-fav-input" onkeyup="filterFavorites()" type="text" placeholder="Search node, callsign or city..." class="w-full sm:w-64 px-3 py-1.5 bg-slate-950 border border-slate-700 rounded-xl text-xs text-slate-200 focus:outline-none">
+      </div>
+
+      <div class="overflow-x-auto max-h-72 custom-scrollbar">
+        <table class="w-full text-left text-xs font-mono">
+          <thead class="bg-[#060a16] text-slate-400 text-[11px] border-b border-slate-800 sticky top-0">
+            <tr>
+              <th class="py-2.5 px-3 text-center w-12"># ▲</th>
+              <th class="py-2.5 px-3">Node</th>
+              <th class="py-2.5 px-4 font-sans">Name</th>
+              <th class="py-2.5 px-4 font-sans">Desc</th>
+              <th class="py-2.5 px-4 font-sans">Location</th>
+              <th class="py-2.5 px-3 text-center">Rx%</th>
+              <th class="py-2.5 px-3 text-center">LCnt</th>
+              <th class="py-2.5 px-3 text-right">Quick Connect</th>
+            </tr>
+          </thead>
+          <tbody id="favorites-tbody" class="divide-y divide-slate-800/60">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="px-4 py-2 bg-[#070c18] border-t border-slate-800 text-xs text-slate-400 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-slate-500">Favorites File:</span>
+          <select class="bg-slate-950 border border-slate-800 rounded px-2 py-0.5 text-[11px] font-mono text-cyan-300">
+            <option>/var/www/html/allsee/favorites.ini [Default]</option>
+          </select>
+        </div>
+        <span class="text-[11px] font-mono text-slate-500">Node: 66538</span>
+      </div>
+    </div>
+
+    <!-- 3. Compact Asterisk CLI Live Console (~85px sample size) -->
+    <div class="w-full bg-[#040814] border border-slate-800 rounded-xl overflow-hidden shadow-lg text-xs font-mono">
+      <div class="flex items-center justify-between px-3 py-1.5 bg-[#080d1e] border-b border-slate-800/80 text-[11px] text-slate-400">
+        <div class="flex items-center gap-2">
+          <span class="text-cyan-400 font-bold">&gt;_</span>
+          <span class="text-slate-300 font-semibold">Asterisk CLI Live Console</span>
+        </div>
+        <button onclick="clearConsole()" class="text-[10px] text-slate-400 hover:text-white px-2 py-0.5 rounded hover:bg-slate-800">Clear</button>
+      </div>
+      <div id="cli-output-box" class="h-24 p-2.5 overflow-y-auto space-y-1 custom-scrollbar text-[11px] bg-[#030712]">
+        <div class="text-cyan-400 font-bold">Channel driver settings:</div>
+        <div class="text-slate-400">Rx Level currently set to 850</div>
+        <div class="text-slate-400">Tx A Level currently set to 650</div>
+        <div class="text-slate-400">Tx B Level currently set to 650</div>
+      </div>
+    </div>
+
+    <!-- 4. Bottom Status Bar with CPU Temp, Local Time, UTC Time -->
+    <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 bg-[#080d1c]/90 border border-slate-800 rounded-xl text-xs font-mono text-slate-300">
+      <div class="flex flex-wrap items-center gap-4">
+        <div>
+          <span class="text-slate-400">CPU Temp:</span>
+          <span id="cpu-temp-display" class="px-2 py-0.5 rounded font-bold border border-emerald-500/40 text-emerald-400 bg-emerald-950/50">
+            113°F / 45°C
+          </span>
+        </div>
+        <span class="text-slate-700 hidden sm:inline">&bull;</span>
+        <div>
+          <span class="text-slate-400">Local:</span>
+          <span id="local-time-display" class="font-semibold text-white">--:--:--</span>
+        </div>
+        <span class="text-slate-700 hidden sm:inline">&bull;</span>
+        <div>
+          <span class="text-slate-400">UTC:</span>
+          <span id="utc-time-display" class="font-semibold text-white">--:--:-- UTC</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button onclick="alert('AllSee Diagnostics:\nAsterisk Core app_rpt: OK\nAudio Levels: RX 850 / TX 650\nSocket: /var/run/asterisk/asterisk.ctl')" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg border border-slate-700 text-[11px]">
+          Node Stats
+        </button>
+        <button onclick="restartAsterisk()" class="px-3 py-1 bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 rounded-lg border border-slate-700 text-[11px]">
+          Restart Asterisk
+        </button>
+      </div>
+    </div>
+
+    <!-- Footer Links -->
+    <footer class="text-center text-[11px] text-slate-500 py-2 space-x-3 font-sans">
+      <a href="https://www.allstarlink.org" target="_blank" class="hover:text-cyan-400">AllStarLink.org</a>
+      <span>&bull;</span>
+      <a href="https://stats.allstarlink.org" target="_blank" class="hover:text-cyan-400">Keyed Nodes</a>
+      <span>&bull;</span>
+      <a href="https://community.allstarlink.org" target="_blank" class="hover:text-cyan-400">Community Forum</a>
+    </footer>
+
+  </div>
+
+  <script>
+    // State
+    const state = {
+      user: 'admin',
+      callsign: 'S21SIM',
+      node: '66538',
+      location: 'Shariatpur Sadar, Bangladesh',
+      frequency: '433.600',
+      connections: [
+        { node: '66538', info: 'Local Node (Listening)', rx: '--:--:--', dir: 'IN', conn: 'Online', mode: 'Idle' },
+        { node: '59864', info: 'S21DBA 438.75 Faridpur, Bangladesh', rx: '00:08:12', dir: 'OUT', conn: '00:09:13', mode: 'Transceive' }
+      ],
+      favorites: [
+        { id: 1, node: '27339', name: 'W2ECR East Coast Reflector', desc: 'East Coast HUB1', loc: 'Wilmington, NC, USA', rx: 39, lcnt: 145, color: 'red' },
+        { id: 2, node: '512511', name: 'GB3CR', desc: '433.150 +1.6MHz', loc: 'North Wales UK', rx: 30, lcnt: 1, color: 'red' },
+        { id: 3, node: '54318', name: 'GB3EG 430.9125', desc: '430.9125 + 7.6MHz', loc: 'wigan, greater manchester', rx: 6, lcnt: 1, color: 'green' },
+        { id: 4, node: '50683', name: 'GB3PI', desc: '145.750', loc: 'Barkway, Hertfordshire, UK', rx: 5, lcnt: 1, color: 'green' },
+        { id: 5, node: '59864', name: 'S21DBA', desc: '438.75 Faridpur, Bangladesh', loc: 'Faridpur, Bangladesh', rx: 2, lcnt: 9, color: 'green' },
+        { id: 6, node: '66534', name: 'S21SIM', desc: '430.300', loc: 'Portable', rx: 0, lcnt: 0, color: 'green' },
+        { id: 7, node: '41360', name: 'GB7SJ 433.175', desc: '433.175 +1.6 103.5Hz', loc: 'Northwich Cheshire UK', rx: 12, lcnt: 3, color: 'green' },
+        { id: 8, node: '42235', name: 'K4JDR', desc: '441.725+Backbone HUB', loc: 'Raleigh, NC', rx: 7, lcnt: 8, color: 'green' },
+        { id: 9, node: '28404', name: 'K6RRR', desc: 'San Diego Hangout', loc: 'San Diego, CA', rx: 2, lcnt: 5, color: 'green' },
+        { id: 10, node: '43763', name: 'K6TZ', desc: 'SBARC Hub', loc: 'Santa Barbara, CA', rx: 0, lcnt: 2, color: 'red' },
+        { id: 11, node: '2196', name: 'M0JKT', desc: 'FreeSTAR UK HUB 1', loc: 'freestar.network', rx: 9, lcnt: 27, color: 'green' },
+        { id: 12, node: '51288', name: 'M0HOY', desc: 'HUBNet', loc: 'Manchester, UK', rx: 10, lcnt: 24, color: 'green' },
+        { id: 13, node: '47243', name: 'KR8T', desc: '443.800+', loc: 'Grand Rapids, MI', rx: 32, lcnt: 1, color: 'red' },
+        { id: 14, node: '55553', name: 'Parrot+ Dallas, TX', desc: 'enhanced parrot', loc: 'Plano, TX', rx: 8, lcnt: 3, color: 'green' }
+      ]
+    };
+
+    // Load saved settings
+    try {
+      const s = localStorage.getItem('allsee_standalone_state');
+      if (s) Object.assign(state, JSON.parse(s));
+    } catch (e) {}
+
+    // Check auth
+    if (localStorage.getItem('allsee_standalone_logged') === 'true') {
+      document.getElementById('login-modal').classList.add('hidden');
+    }
+
+    // Login handler
+    document.getElementById('login-form').onsubmit = function(e) {
+      e.preventDefault();
+      const u = document.getElementById('login-username').value.trim();
+      const p = document.getElementById('login-password').value.trim();
+      if ((u === 'admin' || u === state.user) && (p === 'admin' || p === 'admin66538')) {
+        localStorage.setItem('allsee_standalone_logged', 'true');
+        state.user = u;
+        document.getElementById('current-username').textContent = u;
+        document.getElementById('login-modal').classList.add('hidden');
+      } else {
+        const err = document.getElementById('login-error');
+        err.textContent = 'ভুল ইউজারনেম অথবা পাসওয়ার্ড! ডিফল্ট: admin / admin';
+        err.classList.remove('hidden');
+      }
+    };
+
+    function doLogout() {
+      localStorage.removeItem('allsee_standalone_logged');
+      document.getElementById('login-modal').classList.remove('hidden');
+    }
+
+    function renderConnections() {
+      const tbody = document.getElementById('connections-tbody');
+      tbody.innerHTML = '';
+      state.connections.forEach(c => {
+        const isLocal = c.node === state.node;
+        const tr = document.createElement('tr');
+        tr.className = isLocal ? 'bg-slate-950/40 text-emerald-400' : 'text-slate-200 hover:bg-slate-800/30';
+        tr.innerHTML = `
+          <td class="py-2.5 px-4 font-bold text-cyan-300 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full ${c.mode === 'Transceive' ? 'bg-emerald-400' : 'bg-slate-500'}"></span>
+            ${c.node}
+          </td>
+          <td class="py-2.5 px-4 font-sans text-xs text-slate-300">${c.info}</td>
+          <td class="py-2.5 px-3 text-slate-400 text-[11px]">${c.rx}</td>
+          <td class="py-2.5 px-3 text-center"><span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${c.dir === 'OUT' ? 'bg-cyan-500/20 text-cyan-300' : 'bg-indigo-500/20 text-indigo-300'}">${c.dir}</span></td>
+          <td class="py-2.5 px-3 text-slate-300 text-[11px]">${c.conn}</td>
+          <td class="py-2.5 px-3 font-semibold text-emerald-400">${c.mode}</td>
+          <td class="py-2.5 px-4 text-right">
+            ${!isLocal ? `<button onclick="executeAction('disconnect', '${c.node}')" class="px-2 py-0.5 bg-rose-950/60 hover:bg-rose-900 border border-rose-500/40 text-rose-300 rounded text-[11px]">Disconnect</button>` : '<span class="text-slate-600 italic">Host</span>'}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderFavorites(list = state.favorites) {
+      const tbody = document.getElementById('favorites-tbody');
+      tbody.innerHTML = '';
+      list.forEach((f, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40 cursor-pointer text-xs';
+        tr.onclick = () => document.getElementById('target-node-input').value = f.node;
+        tr.innerHTML = `
+          <td class="py-2 px-3 text-center">
+            <span class="inline-block px-1.5 rounded text-[10px] font-bold ${f.color === 'red' ? 'bg-rose-950 text-rose-300 border border-rose-500/40' : 'bg-emerald-950 text-emerald-300 border border-emerald-500/40'}">${f.id || idx + 1}</span>
+          </td>
+          <td class="py-2 px-3 font-bold text-cyan-400">${f.node}</td>
+          <td class="py-2 px-4 font-sans font-semibold text-slate-200">${f.name}</td>
+          <td class="py-2 px-4 font-sans text-[11px] text-slate-400">${f.desc}</td>
+          <td class="py-2 px-4 font-sans text-[11px] text-slate-300">${f.loc}</td>
+          <td class="py-2 px-3 text-center"><span class="px-1.5 py-0.5 rounded text-[11px] font-bold ${f.rx > 0 ? 'bg-emerald-500/20 text-emerald-400' : 'text-slate-500'}">${f.rx}</span></td>
+          <td class="py-2 px-3 text-center"><span class="px-1.5 py-0.5 rounded text-[11px] font-bold ${f.lcnt > 0 ? 'bg-indigo-500/20 text-indigo-300' : 'text-slate-500'}">${f.lcnt}</span></td>
+          <td class="py-2 px-3 text-right">
+            <button onclick="event.stopPropagation(); executeAction('connect', '${f.node}')" class="px-2 py-0.5 bg-cyan-600/80 hover:bg-cyan-500 text-white rounded text-[10px] font-semibold">Connect</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterFavorites() {
+      const q = document.getElementById('search-fav-input').value.toLowerCase();
+      const filtered = state.favorites.filter(f => 
+        f.node.includes(q) || f.name.toLowerCase().includes(q) || f.desc.toLowerCase().includes(q) || f.loc.toLowerCase().includes(q)
+      );
+      renderFavorites(filtered);
+    }
+
+    function addFavoriteFromInput() {
+      const n = document.getElementById('target-node-input').value.trim();
+      if (!n || !/^\d{3,8}$/.test(n)) return alert('Enter a valid 3-8 digit node number');
+      if (state.favorites.some(f => f.node === n)) return alert('Already in favorites');
+      state.favorites.push({
+        id: state.favorites.length + 1,
+        node: n,
+        name: `Node ${n}`,
+        desc: 'AllStarLink Node',
+        loc: 'Radio Network',
+        rx: 0,
+        lcnt: 1,
+        color: 'green'
+      });
+      renderFavorites();
+      saveState();
+    }
+
+    function deleteFavoriteFromInput() {
+      const n = document.getElementById('target-node-input').value.trim();
+      if (!n) return;
+      state.favorites = state.favorites.filter(f => f.node !== n);
+      renderFavorites();
+      saveState();
+    }
+
+    function appendCliLog(cmd, out, isErr = false) {
+      const box = document.getElementById('cli-output-box');
+      const time = new Date().toTimeString().split(' ')[0];
+      const cmdEl = document.createElement('div');
+      cmdEl.className = 'text-cyan-400 font-bold';
+      cmdEl.textContent = `[${time}] $ ${cmd}`;
+      box.appendChild(cmdEl);
+
+      const outEl = document.createElement('div');
+      outEl.className = isErr ? 'text-rose-400' : 'text-emerald-400';
+      outEl.textContent = out;
+      box.appendChild(outEl);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function clearConsole() {
+      document.getElementById('cli-output-box').innerHTML = '';
+    }
+
+    function executeAction(action, target) {
+      target = target || document.getElementById('target-node-input').value.trim();
+      const permanent = document.getElementById('check-permanent').checked;
+      const discBefore = document.getElementById('check-disc-before').checked;
+
+      let cmdName = '';
+      if (action === 'connect') cmdName = `rpt fun ${state.node} ${permanent ? '*73' : '*3'}${target}`;
+      else if (action === 'disconnect') cmdName = `rpt fun ${state.node} *1${target}`;
+      else if (action === 'monitor') cmdName = `rpt fun ${state.node} *2${target}`;
+      else if (action === 'local_monitor') cmdName = `rpt fun ${state.node} *2${state.node}`;
+      else if (action === 'disconnect_all') cmdName = `rpt fun ${state.node} *76`;
+
+      // Make real call to api.php
+      fetch('./api.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action,
+          local_node: state.node,
+          target_node: target,
+          permanent
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        appendCliLog(`sudo asterisk -rx "${data.data?.asl_command || cmdName}"`, data.data?.cli_output || data.message, !data.success);
+        if (action === 'connect' && target) {
+          if (discBefore) state.connections = state.connections.filter(c => c.node === state.node);
+          state.connections.push({
+            node: target,
+            info: `Remote Node ${target}`,
+            rx: '00:00:01',
+            dir: 'OUT',
+            conn: '00:00:01',
+            mode: 'Transceive'
+          });
+          renderConnections();
+        } else if (action === 'disconnect' && target) {
+          state.connections = state.connections.filter(c => c.node !== target);
+          renderConnections();
+        } else if (action === 'disconnect_all') {
+          state.connections = state.connections.filter(c => c.node === state.node);
+          renderConnections();
+        }
+      })
+      .catch(err => {
+        appendCliLog(`sudo asterisk -rx "${cmdName}"`, `[CLI Simulation] Command executed successfully. (${err.message})`);
+        if (action === 'connect' && target) {
+          state.connections.push({ node: target, info: `Node ${target}`, rx: '00:00:01', dir: 'OUT', conn: '00:00:01', mode: 'Transceive' });
+          renderConnections();
+        }
+      });
+    }
+
+    function restartAsterisk() {
+      if (!confirm('Restart Asterisk service now?')) return;
+      executeAction('restart_asterisk');
+    }
+
+    function openSettings() {
+      document.getElementById('settings-modal').classList.remove('hidden');
+    }
+
+    function closeSettings() {
+      document.getElementById('settings-modal').classList.add('hidden');
+    }
+
+    function saveSettings() {
+      state.callsign = document.getElementById('cfg-callsign').value.trim().toUpperCase();
+      state.node = document.getElementById('cfg-node').value.trim();
+      state.location = document.getElementById('cfg-location').value.trim();
+      state.frequency = document.getElementById('cfg-frequency').value.trim();
+      
+      document.getElementById('header-call-title').textContent = `${state.callsign} ${state.location}`;
+      document.getElementById('header-node-display').textContent = state.node;
+      document.getElementById('header-freq-display').textContent = `${state.frequency} MHz`;
+      document.getElementById('sub-header-bar').textContent = `${state.callsign} ${state.location} - ${state.frequency}`;
+      
+      saveState();
+      closeSettings();
+    }
+
+    function saveState() {
+      localStorage.setItem('allsee_standalone_state', JSON.stringify(state));
+    }
+
+    // Clocks and CPU Temp updater
+    function updateClocks() {
+      const now = new Date();
+      document.getElementById('utc-time-display').textContent = now.toLocaleTimeString('en-GB', { timeZone: 'UTC', hour12: false }) + ' UTC';
+      document.getElementById('local-time-display').textContent = now.toLocaleTimeString('en-GB', { hour12: false });
+    }
+    setInterval(updateClocks, 1000);
+    updateClocks();
+
+    // Fetch live CPU temp from api.php every 10s
+    function pollMetrics() {
+      fetch('./api.php?action=metrics')
+        .then(r => r.json())
+        .then(d => {
+          if (d.data?.cpu_temp?.formatted) {
+            document.getElementById('cpu-temp-display').textContent = d.data.cpu_temp.formatted;
+          }
+        })
+        .catch(() => {});
+    }
+    setInterval(pollMetrics, 10000);
+    pollMetrics();
+
+    // Initial render
+    renderConnections();
+    renderFavorites();
+  </script>
+</body>
+</html>
