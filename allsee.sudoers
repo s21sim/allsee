@@ -1,0 +1,11 @@
+# /etc/sudoers.d/allsee
+# AllSee v2.0 - Sudoers configuration for Asterisk & System Control
+# This rule allows the Apache/web server user (www-data) to run Asterisk CLI commands and restart without password.
+
+www-data ALL=(ALL) NOPASSWD: /usr/sbin/asterisk -rx *
+www-data ALL=(ALL) NOPASSWD: /usr/bin/asterisk -rx *
+www-data ALL=(ALL) NOPASSWD: /bin/systemctl restart asterisk
+www-data ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart asterisk
+www-data ALL=(ALL) NOPASSWD: /bin/systemctl status asterisk
+www-data ALL=(ALL) NOPASSWD: /usr/bin/systemctl status asterisk
+www-data ALL=(ALL) NOPASSWD: /usr/bin/vcgencmd *
