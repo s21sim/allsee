@@ -25,10 +25,8 @@
 আপনার AllStarLink সার্ভারের (Raspberry Pi বা Debian) টার্মিনালে নিচের কমান্ডটি রান করুন:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/<YOUR-GITHUB-USERNAME>/allsee/main/install.sh | sudo bash
+curl -sSL https://raw.githubusercontent.com/s21sim/allsee/main/install.sh | sudo bash
 ```
-*(নোট: `<YOUR-GITHUB-USERNAME>`-এর জায়গায় আপনার গিটহাব ইউজারনেম দিন)*
-
 ---
 
 ## 🛠️ ম্যানুয়াল ইনস্টলেশন (Git Clone Method)
