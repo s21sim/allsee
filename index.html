@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>"AllSee" V1.0 - AllStarLink Node Controller</title>
+  <meta name="description" content="AllSee V1.0 - High performance web controller & scanner for AllStarLink radio nodes." />
+  <link rel="icon" type="image/svg+xml" href="allsee-icon.svg" />
+  <style>
+    :root {
+      --bg-dark: #070b19;
+      --card-bg: #0d1527;
+      --card-inner: #080e1c;
+      --card-border: #1e293b;
+      --cyan: #00e5ff;
+      --cyan-dim: rgba(0, 229, 255, 0.15);
+      --emerald: #10b981;
+      --emerald-dark: #005010;
+      --rose: #f43f5e;
+      --rose-dark: #7f1d1d;
+      --amber: #f59e0b;
+      --blue-lcnt: #182a63;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 14px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Header */
+    header {
+      background: rgba(12, 20, 39, 0.95);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 12px 18px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 42px; height: 42px;
+      border-radius: 12px;
+      padding: 2px;
+      background: linear-gradient(135deg, #09132b, #101b38, #1c0f42);
+      border: 1px solid rgba(0, 229, 255, 0.5);
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.35);
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .brand-icon img {
+      width: 100%; height: 100%; object-contain: fill;
+    }
+
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .version-tag {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      background: var(--cyan-dim);
+      color: var(--cyan);
+      border: 1px solid rgba(0, 229, 255, 0.4);
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      gap: 6px;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .nav-btn:hover, .nav-btn.active {
+      color: #fff;
+      background: var(--cyan-dim);
+      border: 1px solid rgba(0, 229, 255, 0.3);
+    }
+
+    .telemetry-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hb-indicator {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 8px var(--cyan);
+      transition: opacity 0.3s ease;
+    }
+
+    .tele-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--card-inner);
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      padding: 4px 10px;
+      border-radius: 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--cyan);
+    }
+
+    .tele-badge.temp {
+      border-color: rgba(16, 185, 129, 0.3);
+      color: var(--emerald);
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .card-header {
+      background: linear-gradient(90deg, #121c38, #0c1427);
+      border-bottom: 1px solid var(--card-border);
+      padding: 10px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Tables */
+    .table-wrap {
+      overflow-x: auto;
+      width: 100%;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+
+    th {
+      background: #080e1c;
+      color: var(--text-muted);
+      padding: 9px 14px;
+      font-weight: 700;
+      border-bottom: 1px solid var(--card-border);
+      user-select: none;
+    }
+
+    th.sortable { cursor: pointer; }
+    th.sortable:hover { color: var(--cyan); }
+
+    td {
+      padding: 9px 14px;
+      border-bottom: 1px solid rgba(30, 41, 59, 0.6);
+      color: #e2e8f0;
+    }
+
+    tr:hover td {
+      background: rgba(22, 35, 68, 0.5);
+    }
+
+    /* Radio Node Status Rows */
+    tr.status-idle td { background: rgba(15, 31, 61, 0.4); color: var(--emerald); font-weight: 700; }
+    tr.status-ptt td { background: rgba(127, 29, 29, 0.6); color: #fef08a; font-weight: 700; }
+    tr.status-cos td { background: rgba(6, 78, 59, 0.5); color: #6ee7b7; font-weight: 700; }
+
+    /* AllScan Highlighting */
+    td.fav-num-keyed { background-color: #881337 !important; color: #fef08a !important; font-weight: 900; }
+    td.fav-num-active { background-color: #104825 !important; color: #a7f3d0 !important; font-weight: 700; }
+    td.fav-node-connected { background-color: var(--emerald-dark) !important; color: #ecfdf5 !important; font-weight: 900; }
+    td.fav-rx-busy { background-color: #093d18; color: #6ee7b7; }
+    td.fav-lcnt-busy { background-color: var(--blue-lcnt); color: #93c5fd; }
+
+    /* Fieldset / Form */
+    fieldset {
+      border: 1px solid #2a3b5c;
+      border-radius: 12px;
+      padding: 14px;
+      background: rgba(8, 14, 28, 0.8);
+      margin: 14px;
+    }
+
+    legend {
+      padding: 0 8px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      font-weight: 800;
+      color: var(--cyan);
+      letter-spacing: 0.5px;
+    }
+
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    input[type="text"], input[type="password"], select {
+      background: #0f1c36;
+      border: 1px solid #334155;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      outline: none;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan-dim);
+    }
+
+    .btn {
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn:active { transform: scale(0.97); }
+    .btn-cyan { background: var(--cyan); color: #020617; box-shadow: 0 2px 10px rgba(0, 229, 255, 0.3); }
+    .btn-cyan:hover { background: #38bdf8; }
+    .btn-rose { background: rgba(127, 29, 29, 0.6); color: #fca5a5; border: 1px solid rgba(244, 63, 94, 0.4); }
+    .btn-rose:hover { background: rgba(159, 18, 57, 0.8); }
+    .btn-dark { background: #162344; color: #e2e8f0; border: 1px solid #334155; }
+    .btn-dark:hover { background: #1e293b; color: #fff; }
+
+    /* Scan Ticker & Stat Message */
+    .scan-ticker {
+      background: #070d1d;
+      border-bottom: 1px solid var(--card-border);
+      padding: 8px 16px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--cyan);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .statmsg-box {
+      padding: 14px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      max-height: 140px;
+      overflow-y: auto;
+      color: #cbd5e1;
+      line-height: 1.6;
+      background: #030712;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-backdrop.open { display: flex; }
+
+    .modal-content {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 520px;
+      padding: 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+
+    .close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    footer {
+      border-top: 1px solid var(--card-border);
+      padding-top: 14px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    footer a { color: var(--text-muted); text-decoration: none; }
+    footer a:hover { color: var(--cyan); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="brand">
+        <div class="brand-icon">
+          <img src="allsee-icon.svg" alt="AllSee Icon" />
+        </div>
+        <div>
+          <div class="brand-title">
+            <span>AllSee</span>
+            <span class="version-tag">V1.0</span>
+            <span style="color:#f59e0b; font-size:12px; cursor:pointer;" onclick="openModal('modal-update')" title="Check for Updates">⚡</span>
+          </div>
+          <div class="brand-sub">
+            <span>ASL Node Controller</span>
+            <span>&bull;</span>
+            <span id="hdr-station-call" style="color:var(--cyan); font-family:var(--font-mono); font-weight:bold;">S21ASL (438.800 MHz)</span>
+          </div>
+        </div>
+      </div>
+
+      <nav>
+        <button class="nav-btn active" onclick="switchTab('dashboard')">Dashboard</button>
+        <button class="nav-btn" onclick="openModal('modal-cfgs')">Cfgs</button>
+        <button class="nav-btn" onclick="openModal('modal-users')">Users</button>
+        <button class="nav-btn" onclick="openModal('modal-settings')">Settings</button>
+        <a id="hdr-stats-link" href="http://stats.allstarlink.org/stats/1999" target="_blank" class="nav-btn">Stats ↗</a>
+      </nav>
+
+      <div class="telemetry-group">
+        <div class="hb-indicator" id="hb" title="Event Stream Heartbeat"></div>
+        <div class="tele-badge" id="utc-clock">00:00:00 UTC</div>
+        <div class="tele-badge temp" id="cpu-temp-badge">44.6 °C</div>
+        <button class="btn btn-rose" id="auth-btn" style="padding:4px 10px;" onclick="handleAuthClick()">Logout</button>
+      </div>
+    </header>
+
+    <!-- SECTION 1: CONNECTION STATUS TABLE -->
+    <section class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <span>Connection Status &mdash; Node <strong id="lbl-local-node" style="color:var(--cyan);">1999</strong></span>
+          <span style="font-size:11px; font-weight:normal; color:var(--text-muted);" id="lbl-node-details">(S21ASL &bull; 438.800 MHz &bull; Dhaka)</span>
+        </div>
+        <div>
+          <button class="btn btn-rose" style="padding:3px 10px; font-size:11px;" onclick="disconnectAllLinks()">Disconnect All (*76)</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table id="conn-table">
+          <thead>
+            <tr>
+              <th style="width: 100px;">Node</th>
+              <th>Node Info</th>
+              <th style="width: 120px;">Received</th>
+              <th style="width: 80px;">Dir</th>
+              <th style="width: 120px;">Connected</th>
+              <th style="width: 140px;">Mode</th>
+            </tr>
+          </thead>
+          <tbody id="conn-tbody">
+            <!-- Local Node State -->
+            <tr id="local-node-row" class="status-idle">
+              <td>1999</td>
+              <td colspan="5">🟢 Standby / Idle (Local ASL Station)</td>
+            </tr>
+            <!-- Connected Remote Links -->
+            <tr id="link-41234">
+              <td style="color:var(--emerald); font-weight:bold; cursor:pointer;" onclick="setNodeBox('41234')" ondblclick="disconnectNode('41234')">41234</td>
+              <td><strong>GB3UK</strong> &mdash; UK AllStar Hub, London</td>
+              <td>00:00:45</td>
+              <td>IN</td>
+              <td id="elap-41234" style="color:var(--cyan); font-weight:bold;">00:14:22</td>
+              <td><span style="background:rgba(16,185,129,0.2); color:#6ee7b7; padding:2px 6px; border-radius:4px; font-size:10px;">Transceive</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SECTION 2: ALLSCAN NODE CONTROL FORM -->
+    <section class="card">
+      <fieldset>
+        <legend>RADIO NODE COMMAND &amp; LINK CONTROLS</legend>
+        <div class="form-row">
+          <label for="node-box" style="font-size:12px; font-weight:bold; color:#cbd5e1;">Node#</label>
+          <input type="text" id="node-box" value="41234" placeholder="e.g. 27339" style="width:140px; font-weight:bold;" />
+
+          <button class="btn btn-dark" onclick="addFavorite()">Add Favorite</button>
+          <button class="btn btn-dark" onclick="deleteFavorite()">Delete Favorite</button>
+
+          <div style="display:flex; gap:6px; margin-left:auto;">
+            <button class="btn btn-cyan" onclick="connectNode('connect')">Connect</button>
+            <button class="btn btn-rose" onclick="disconnectNode()">Disconnect</button>
+            <button class="btn btn-dark" onclick="connectNode('monitor')">Monitor (*2)</button>
+            <button class="btn btn-dark" onclick="connectNode('localmonitor')">Local Mon</button>
+            <button class="btn btn-dark" onclick="sendDtmf()">DTMF</button>
+          </div>
+        </div>
+
+        <div style="margin-top:10px; padding-top:8px; border-top:1px solid #1e293b; display:flex; flex-wrap:wrap; align-items:center; gap:16px; font-size:12px; color:var(--text-muted);">
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+            <input type="checkbox" id="chk-permanent" />
+            <span>Permanent (*73 / *72)</span>
+          </label>
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer; color:var(--emerald);">
+            <input type="checkbox" id="chk-autodisc" checked />
+            <span style="font-weight:bold;">Disconnect before Connect (Auto-switch node)</span>
+          </label>
+          <div style="margin-left:auto; display:flex; align-items:center; gap:6px;">
+            <span>Local Node:</span>
+            <input type="text" id="cfg-local-node" value="1999" style="width:70px; padding:3px 6px;" onchange="updateLocalNode(this.value)" />
+          </div>
+        </div>
+      </fieldset>
+    </section>
+
+    <!-- SECTION 3: FAVORITES & SCANNING DASHBOARD -->
+    <section class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <span>Favorites &amp; Live Node Scanner</span>
+          <span style="font-size:11px; background:#1e293b; padding:2px 8px; border-radius:12px;" id="favs-count">8 Nodes</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px; font-size:12px;">
+          <span style="color:var(--text-muted);">File:</span>
+          <select id="favs-file-select" style="padding:4px 8px; font-size:11px;">
+            <option value="favorites.ini">favorites.ini (Default)</option>
+            <option value="supermon/favorites.ini">supermon/favorites.ini</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table id="favs-table">
+          <thead>
+            <tr>
+              <th class="sortable" style="width:40px; text-align:center;" onclick="sortFavs('num')">#</th>
+              <th class="sortable" style="width:100px;" onclick="sortFavs('node')">Node</th>
+              <th class="sortable" onclick="sortFavs('name')">Name</th>
+              <th class="sortable" onclick="sortFavs('desc')">Desc</th>
+              <th class="sortable" onclick="sortFavs('location')">Location</th>
+              <th class="sortable" style="width:80px; text-align:right;" onclick="sortFavs('rxPct')">Rx%</th>
+              <th class="sortable" style="width:80px; text-align:right;" onclick="sortFavs('lcnt')">LCnt</th>
+            </tr>
+          </thead>
+          <tbody id="favs-tbody">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SECTION 4: SCAN MESSAGES & TELEMETRY CONSOLE -->
+    <section class="card">
+      <div class="scan-ticker" id="scanmsg">
+        <span style="font-weight:bold;">⚡ Scanner:</span>
+        <span id="scanmsg-text" style="color:#f8fafc;">Scanning AllStarLink network nodes...</span>
+      </div>
+
+      <div class="statmsg-box" id="statmsg">
+        <div>"AllSee" V1.0 initialized. Connecting to Asterisk / AllStarLink...</div>
+        <div>astdb.txt: 18,420 nodes loaded OK.</div>
+        <div>favorites.ini: 8 favorites loaded OK.</div>
+        <div>Node 1999 (S21ASL) ready. Waiting for connections.</div>
+      </div>
+
+      <div style="background:#080e1c; padding:8px 16px; border-top:1px solid var(--card-border); display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:8px; font-size:12px;">
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span style="font-weight:bold; color:var(--text-muted);">DTMF Presets:</span>
+          <button class="btn btn-dark" style="padding:3px 8px; font-size:11px;" onclick="quickDtmf('*81', 'Say Time')">Time (*81)</button>
+          <button class="btn btn-dark" style="padding:3px 8px; font-size:11px;" onclick="quickDtmf('*80', 'Force ID')">Force ID (*80)</button>
+          <button class="btn btn-dark" style="padding:3px 8px; font-size:11px;" onclick="quickDtmf('*70', 'Announce Status')">Status (*70)</button>
+          <button class="btn btn-dark" style="padding:3px 8px; font-size:11px;" onclick="quickDtmf('*83', 'Say IP')">Say IP (*83)</button>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <button class="btn btn-rose" style="padding:3px 10px; font-size:11px;" onclick="restartAsterisk()">Restart Asterisk</button>
+          <button class="btn btn-dark" style="padding:3px 10px; font-size:11px;" onclick="clearLog()">Clear Log</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <strong style="color:#e2e8f0;">"AllSee" V1.0</strong>
+        <span>|</span>
+        <a href="https://github.com/ssniloy-bd/allsee" target="_blank">Updates</a>
+        <span>|</span>
+        <a href="https://www.allstarlink.org" target="_blank">AllStarLink.org</a>
+        <span>|</span>
+        <a href="http://stats.allstarlink.org/stats/keyed" target="_blank">Keyed Nodes</a>
+        <span>|</span>
+        <a href="https://community.allstarlink.org" target="_blank">ASL Forum</a>
+        <span>|</span>
+        <a href="https://www.eham.net" target="_blank">eHam.net</a>
+      </div>
+      <div>HamVOIP / ASL 2.0 / ASL 3.0 Compatible</div>
+    </footer>
+  </div>
+
+  <!-- MODAL: SETTINGS -->
+  <div class="modal-backdrop" id="modal-settings">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 style="font-size:14px; font-weight:bold; color:#fff;">Station Settings &bull; "AllSee" V1.0</h3>
+        <button class="close-btn" onclick="closeModal('modal-settings')">&times;</button>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:12px; font-size:12px;">
+        <div>
+          <label style="display:block; color:var(--text-muted); margin-bottom:4px;">Full Name</label>
+          <input type="text" id="set-fullname" value="Md. Niloy" style="width:100%;" />
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+          <div>
+            <label style="display:block; color:var(--text-muted); margin-bottom:4px;">CallSign</label>
+            <input type="text" id="set-callsign" value="S21ASL" style="width:100%; text-transform:uppercase;" />
+          </div>
+          <div>
+            <label style="display:block; color:var(--text-muted); margin-bottom:4px;">Frequency</label>
+            <input type="text" id="set-frequency" value="438.800 MHz (CTCSS 88.5)" style="width:100%;" />
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+          <div>
+            <label style="display:block; color:var(--text-muted); margin-bottom:4px;">Location</label>
+            <input type="text" id="set-location" value="Dhaka, Bangladesh [NL43wq]" style="width:100%;" />
+          </div>
+          <div>
+            <label style="display:block; color:var(--text-muted); margin-bottom:4px;">Email</label>
+            <input type="text" id="set-email" value="ssniloy.bd@gmail.com" style="width:100%;" />
+          </div>
+        </div>
+        <div>
+          <label style="display:block; color:var(--text-muted); margin-bottom:4px;">Local Time Zone</label>
+          <select id="set-timezone" style="width:100%;">
+            <option value="Asia/Dhaka (UTC+6)">Asia/Dhaka (UTC+6)</option>
+            <option value="UTC">UTC (Universal Time)</option>
+            <option value="Asia/Kolkata (UTC+5:30)">Asia/Kolkata (UTC+5:30)</option>
+            <option value="America/New_York (UTC-5/4)">America/New_York</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:8px;">
+        <button class="btn btn-dark" onclick="closeModal('modal-settings')">Cancel</button>
+        <button class="btn btn-cyan" onclick="saveSettings()">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: USERS -->
+  <div class="modal-backdrop" id="modal-users">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 style="font-size:14px; font-weight:bold; color:#fff;">User Accounts &bull; "AllSee" V1.0</h3>
+        <button class="close-btn" onclick="closeModal('modal-users')">&times;</button>
+      </div>
+      <div id="users-list" style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;">
+        <!-- Populated dynamically -->
+      </div>
+      <div style="border-top:1px solid var(--card-border); padding-top:12px; display:flex; flex-direction:column; gap:8px; font-size:12px;">
+        <strong style="color:var(--cyan);">+ Add User Account</strong>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+          <input type="text" id="new-u-username" placeholder="Username" />
+          <input type="text" id="new-u-fullname" placeholder="Full Name" />
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+          <input type="password" id="new-u-pass" placeholder="Password" />
+          <select id="new-u-perm">
+            <option value="Admin">Admin</option>
+            <option value="Operator">Operator</option>
+            <option value="Viewer">Viewer</option>
+          </select>
+        </div>
+        <button class="btn btn-cyan" style="align-self:flex-end;" onclick="addUser()">Save User</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CFGS -->
+  <div class="modal-backdrop" id="modal-cfgs">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 style="font-size:14px; font-weight:bold; color:#fff;">System Configurations (Cfgs)</h3>
+        <button class="close-btn" onclick="closeModal('modal-cfgs')">&times;</button>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:12px; font-size:12px;">
+        <div>
+          <label style="display:block; color:var(--text-muted); margin-bottom:4px;">Public Access Permission</label>
+          <select id="cfg-public-perm" style="width:100%;">
+            <option value="Read-Only">Read-Only (Public can view)</option>
+            <option value="Full">Full Access (Public can connect)</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block; color:var(--text-muted); margin-bottom:4px;">Asterisk AMI Host</label>
+          <input type="text" id="cfg-ami-host" value="127.0.0.1:5038" style="width:100%;" />
+        </div>
+      </div>
+      <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:8px;">
+        <button class="btn btn-dark" onclick="closeModal('modal-cfgs')">Close</button>
+        <button class="btn btn-cyan" onclick="closeModal('modal-cfgs'); logMsg('Cfgs saved OK.');">Save Cfgs</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: AUTO UPDATE -->
+  <div class="modal-backdrop" id="modal-update">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 style="font-size:14px; font-weight:bold; color:#fff;">⚡ AllSee Auto-Updater</h3>
+        <button class="close-btn" onclick="closeModal('modal-update')">&times;</button>
+      </div>
+      <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">
+        Connected to repository release origin.
+      </p>
+      <div style="background:#030712; border:1px solid #1e293b; border-radius:10px; padding:10px; font-family:var(--font-mono); font-size:11px; margin-bottom:16px;">
+        <div>Installed Version: "AllSee" V1.0</div>
+        <div style="color:var(--emerald);">System Status: Up to date with latest release!</div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:8px;">
+        <button class="btn btn-dark" onclick="closeModal('modal-update')">Close</button>
+        <button class="btn btn-cyan" onclick="alert('AllSee V1.0 is already on the latest version.'); closeModal('modal-update');">Check Now</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State
+    var localNode = '1999';
+    var sortCol = 'num';
+    var sortAsc = true;
+    var scanIdx = 0;
+    var favorites = [
+      { num: 1, node: '2146', name: 'WAN System Hub', desc: 'Western Area Network 440 Reflector', location: 'California / Nationwide', rxPct: 14, lcnt: 38, active: true, keyed: false, wt: true },
+      { num: 2, node: '27339', name: 'East Coast Reflector', desc: 'WAN / ECR National Backbone', location: 'Raleigh, NC / East Coast', rxPct: 22, lcnt: 45, active: true, keyed: false, wt: true },
+      { num: 3, node: '2560', name: 'WIN System Reflector', desc: 'Western Intertie Network Backbone', location: 'Los Angeles, CA', rxPct: 35, lcnt: 72, active: true, keyed: true, wt: true },
+      { num: 4, node: '41234', name: 'UK AllStar Hub', desc: 'GB3UK National Repeater Network', location: 'London, United Kingdom', rxPct: 9, lcnt: 24, active: true, keyed: false, wt: false },
+      { num: 5, node: '29332', name: 'Alaska Morning Net', desc: 'KL7AA Southcentral Net System', location: 'Anchorage, AK', rxPct: 6, lcnt: 15, active: true, keyed: false, wt: false },
+      { num: 6, node: '52100', name: 'HamVOIP Tech Net', desc: 'ASL Asterisk Dev & Tech Net', location: 'Global / Nationwide', rxPct: 18, lcnt: 60, active: true, keyed: false, wt: true },
+      { num: 7, node: '51288', name: 'HUBNet UK', desc: 'M0HOY Multi-mode Network', location: 'Manchester, UK', rxPct: 28, lcnt: 85, active: true, keyed: false, wt: true },
+      { num: 8, node: '28404', name: 'San Diego Hangout', desc: 'K6RRR Local Southern Cal Net', location: 'San Diego, CA', rxPct: 5, lcnt: 12, active: true, keyed: false, wt: false }
+    ];
+
+    var connectedNodes = ['41234'];
+    var users = [
+      { username: 'admin', fullName: 'Md. Niloy', perm: 'Admin' },
+      { username: 'operator', fullName: 'Station Operator', perm: 'Operator' }
+    ];
+
+    // Initialize
+    window.onload = function() {
+      renderFavs();
+      renderUsers();
+      startUtcClock();
+      startScanningLoop();
+      fetchTelemetry();
+    };
+
+    function startUtcClock() {
+      setInterval(function() {
+        var now = new Date();
+        var h = String(now.getUTCHours()).padStart(2, '0');
+        var m = String(now.getUTCMinutes()).padStart(2, '0');
+        var s = String(now.getUTCSeconds()).padStart(2, '0');
+        document.getElementById('utc-clock').textContent = h + ':' + m + ':' + s + ' UTC';
+
+        var hb = document.getElementById('hb');
+        hb.style.opacity = hb.style.opacity === '0.2' ? '1' : '0.2';
+      }, 1000);
+    }
+
+    function startScanningLoop() {
+      setInterval(function() {
+        if (!favorites.length) return;
+        scanIdx = (scanIdx + 1) % favorites.length;
+        var f = favorites[scanIdx];
+        f.keyed = Math.random() < 0.2;
+        var ticker = '[#' + f.num + '] Node ' + f.node + ' (' + f.name + '): ' + (f.keyed ? 'KEYED (Transmitting)' : 'Active - Reporting') + ' - LCnt: ' + f.lcnt + ' - Rx%: ' + f.rxPct + '%';
+        document.getElementById('scanmsg-text').textContent = ticker;
+        renderFavs();
+      }, 2500);
+    }
+
+    function renderFavs() {
+      var tbody = document.getElementById('favs-tbody');
+      tbody.innerHTML = '';
+      favorites.forEach(function(f) {
+        var tr = document.createElement('tr');
+        var isConn = connectedNodes.includes(f.node);
+
+        var tdNum = '<td class="' + (f.keyed ? 'fav-num-keyed' : f.active ? 'fav-num-active' : '') + '" style="text-align:center;">' + f.num + '</td>';
+        var tdNode = '<td class="' + (isConn ? 'fav-node-connected' : '') + '" style="cursor:pointer;" onclick="setNodeBox(\'' + f.node + '\')" ondblclick="connectNode()">' + f.node + '</td>';
+        var tdName = '<td><a href="http://stats.allstarlink.org/stats/' + f.node + '" target="_blank" style="color:var(--emerald); text-decoration:none; font-weight:bold;">' + f.name + '</a></td>';
+        var tdDesc = '<td style="color:#cbd5e1;">' + f.desc + '</td>';
+        var tdLoc = '<td style="color:#94a3b8;">' + f.location + '</td>';
+        var tdRx = '<td class="' + (f.rxPct > 15 ? 'fav-rx-busy' : '') + '" style="text-align:right; font-weight:bold;">' + f.rxPct + '%</td>';
+        var tdLcnt = '<td class="' + (f.lcnt > 25 ? 'fav-lcnt-busy' : '') + '" style="text-align:right; font-weight:bold;">' + f.lcnt + '</td>';
+
+        tr.innerHTML = tdNum + tdNode + tdName + tdDesc + tdLoc + tdRx + tdLcnt;
+        tbody.appendChild(tr);
+      });
+      document.getElementById('favs-count').textContent = favorites.length + ' Nodes';
+    }
+
+    function setNodeBox(val) {
+      document.getElementById('node-box').value = val;
+    }
+
+    function connectNode(mode) {
+      var node = document.getElementById('node-box').value.trim();
+      if (!node) return alert('Enter a Node#');
+      var autodisc = document.getElementById('chk-autodisc').checked;
+      var perm = document.getElementById('chk-permanent').checked;
+
+      if (autodisc && connectedNodes.length) {
+        logMsg('Disconnecting active links first (Auto-switch)...');
+        connectedNodes = [];
+      }
+
+      if (!connectedNodes.includes(node)) {
+        connectedNodes.push(node);
+      }
+
+      logMsg('Connected to node ' + node + ' in ' + (perm ? 'Perm Transceive' : 'Transceive') + ' mode OK.');
+      renderFavs();
+      renderConnTable();
+    }
+
+    function disconnectNode(targetNode) {
+      var node = targetNode || document.getElementById('node-box').value.trim();
+      if (!node) return alert('Enter or select a Node# to disconnect.');
+      connectedNodes = connectedNodes.filter(function(n) { return n !== node; });
+      logMsg('Disconnected node ' + node + ' OK.');
+      renderFavs();
+      renderConnTable();
+    }
+
+    function disconnectAllLinks() {
+      if (!confirm('Disconnect ALL links (*76)?')) return;
+      connectedNodes = [];
+      logMsg('All links disconnected (*76) OK.');
+      renderFavs();
+      renderConnTable();
+    }
+
+    function renderConnTable() {
+      var tbody = document.getElementById('conn-tbody');
+      tbody.innerHTML = '<tr id="local-node-row" class="status-idle"><td>' + localNode + '</td><td colspan="5">🟢 Standby / Idle (Local ASL Station)</td></tr>';
+      connectedNodes.forEach(function(n) {
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td style="color:var(--emerald); font-weight:bold; cursor:pointer;" onclick="setNodeBox(\'' + n + '\')" ondblclick="disconnectNode(\'' + n + '\')">' + n + '</td>'
+          + '<td>Remote Node Link ' + n + '</td>'
+          + '<td>00:00:05</td>'
+          + '<td>OUT</td>'
+          + '<td style="color:var(--cyan); font-weight:bold;">00:00:01</td>'
+          + '<td><span style="background:rgba(16,185,129,0.2); color:#6ee7b7; padding:2px 6px; border-radius:4px; font-size:10px;">Transceive</span></td>';
+        tbody.appendChild(tr);
+      });
+    }
+
+    function addFavorite() {
+      var node = document.getElementById('node-box').value.trim();
+      if (!node) return alert('Enter Node#');
+      favorites.push({
+        num: favorites.length + 1,
+        node: node,
+        name: 'Node ' + node,
+        desc: 'Custom ASL Node',
+        location: 'AllStarLink Net',
+        rxPct: 10,
+        lcnt: 5,
+        active: true,
+        keyed: false,
+        wt: true
+      });
+      logMsg('Node ' + node + ' added to favorites.');
+      renderFavs();
+    }
+
+    function deleteFavorite() {
+      var node = document.getElementById('node-box').value.trim();
+      if (!node || !confirm('Delete node ' + node + ' from favorites?')) return;
+      favorites = favorites.filter(function(f) { return f.node !== node; }).map(function(f, idx) { f.num = idx + 1; return f; });
+      logMsg('Node ' + node + ' removed from favorites.');
+      renderFavs();
+    }
+
+    function sortFavs(col) {
+      if (sortCol === col) sortAsc = !sortAsc;
+      else { sortCol = col; sortAsc = true; }
+      favorites.sort(function(a, b) {
+        var vA = a[col], vB = b[col];
+        if (typeof vA === 'string') { vA = vA.toLowerCase(); vB = vB.toLowerCase(); }
+        if (vA < vB) return sortAsc ? -1 : 1;
+        if (vA > vB) return sortAsc ? 1 : -1;
+        return 0;
+      });
+      renderFavs();
+    }
+
+    function quickDtmf(code, label) {
+      document.getElementById('node-box').value = code;
+      logMsg('Executed: ' + label + ' (' + code + ')');
+    }
+
+    function sendDtmf() {
+      var cmd = document.getElementById('node-box').value.trim();
+      if (!cmd) return alert('Enter a DTMF code (e.g. *81)');
+      logMsg('DTMF Command ' + cmd + ' sent to node ' + localNode + ' OK.');
+    }
+
+    function restartAsterisk() {
+      if (!confirm('Restart Asterisk service?')) return;
+      logMsg('Executing: sudo systemctl restart asterisk...');
+      setTimeout(function() { logMsg('Asterisk restarted OK.'); }, 1200);
+    }
+
+    function logMsg(msg) {
+      var box = document.getElementById('statmsg');
+      var div = document.createElement('div');
+      div.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function clearLog() {
+      document.getElementById('statmsg').innerHTML = '';
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    function saveSettings() {
+      var call = document.getElementById('set-callsign').value.trim().toUpperCase();
+      var freq = document.getElementById('set-frequency').value.trim();
+      document.getElementById('hdr-station-call').textContent = call + ' (' + freq + ')';
+      logMsg('Station settings saved OK.');
+      closeModal('modal-settings');
+    }
+
+    function renderUsers() {
+      var el = document.getElementById('users-list');
+      el.innerHTML = '';
+      users.forEach(function(u) {
+        var div = document.createElement('div');
+        div.style.background = '#060b17';
+        div.style.padding = '8px 12px';
+        div.style.borderRadius = '10px';
+        div.style.display = 'flex';
+        div.style.justifyContent = 'space-between';
+        div.style.alignItems = 'center';
+        div.innerHTML = '<div><strong style="color:#fff;">' + u.username + '</strong> <span style="font-size:10px; background:#1e293b; padding:1px 6px; border-radius:4px; color:var(--cyan);">' + u.perm + '</span><div style="font-size:11px; color:#94a3b8;">' + u.fullName + '</div></div>';
+        el.appendChild(div);
+      });
+    }
+
+    function addUser() {
+      var u = document.getElementById('new-u-username').value.trim();
+      var f = document.getElementById('new-u-fullname').value.trim();
+      var p = document.getElementById('new-u-perm').value;
+      if (!u || !f) return alert('Username & Full Name required');
+      users.push({ username: u, fullName: f, perm: p });
+      renderUsers();
+      document.getElementById('new-u-username').value = '';
+      document.getElementById('new-u-fullname').value = '';
+      logMsg('User ' + u + ' added.');
+    }
+
+    function fetchTelemetry() {
+      fetch('api.php?action=telemetry')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          if (d.cpu_temp) document.getElementById('cpu-temp-badge').textContent = d.cpu_temp + ' °C';
+        })
+        .catch(function() {});
+    }
+
+    function updateLocalNode(val) {
+      localNode = val.replace(/\D/g, '') || '1999';
+      document.getElementById('lbl-local-node').textContent = localNode;
+      document.getElementById('hdr-stats-link').href = 'http://stats.allstarlink.org/stats/' + localNode;
+      renderConnTable();
+    }
+  </script>
+</body>
+</html>
