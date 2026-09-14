@@ -1,0 +1,6 @@
+{
+  "name": "AllSee - AllStarLink Node Controller",
+  "description": "Web-based lightweight dark-themed controller for AllStarLink (ASL) radio nodes with Asterisk CLI execution.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
