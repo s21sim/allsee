@@ -1,0 +1,6 @@
+{
+  "name": "AllSee",
+  "description": "Modern Dark UI AllStarLink node scanner, active link monitor, favorites manager, and Asterisk control dashboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
