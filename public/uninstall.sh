@@ -33,7 +33,6 @@ if [ "$(id -u)" -ne 0 ]; then
     echo -e "${RED}[ERROR] This uninstaller must be run as root or with sudo.${NC}"
     echo -e "${YELLOW}Please re-run as:${NC} sudo bash uninstall.sh"
     exit 1
-fi
 
 INSTALL_DIRS=(
     "/var/www/html/allsee"
