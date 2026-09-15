@@ -39,6 +39,7 @@ fi
 
 INSTALL_DIR="/var/www/html/allsee"
 REPO_URL="https://github.com/s21sim/allsee.git"
+TARBALL_URL="https://github.com/s21sim/allsee/archive/refs/heads/main.tar.gz"
 WEB_USER="www-data"
 
 # Check OS and web server user
@@ -52,7 +53,20 @@ elif id -u "nginx" >/dev/null 2>&1; then
     WEB_USER="nginx"
 fi
 
-echo -e "\n${BLUE}[1/6]${NC} Detecting System Environment & Web Server..."
+echo -e "\n${BLUE}[1/5]${NC} Detecting System Environment & Web Server..."
+
+# Ensure core package installer tools are ready
+if ! command -v git >/dev/null 2>&1 || ! command -v curl >/dev/null 2>&1 || ! command -v tar >/dev/null 2>&1; then
+    echo -e "${YELLOW}[!] Installing required helper tools (git, curl, tar)...${NC}"
+    if command -v apt-get >/dev/null 2>&1; then
+        apt-get update -qq || true
+        apt-get install -y -qq git curl tar ca-certificates || true
+    elif command -v pacman >/dev/null 2>&1; then
+        pacman -Sy --noconfirm git curl tar ca-certificates || true
+    elif command -v yum >/dev/null 2>&1; then
+        yum install -y -q git curl tar ca-certificates || true
+    fi
+fi
 
 # Ensure target web root directory exists
 if [ ! -d "/var/www/html" ]; then
@@ -69,14 +83,14 @@ fi
 if ! command -v apache2 >/dev/null 2>&1 && ! command -v nginx >/dev/null 2>&1 && ! command -v httpd >/dev/null 2>&1 && ! command -v lighttpd >/dev/null 2>&1; then
     echo -e "${YELLOW}[!] Web server not detected. Installing Apache2 and PHP...${NC}"
     if command -v apt-get >/dev/null 2>&1; then
-        apt-get update -qq
-        apt-get install -y -qq apache2 php php-cli libapache2-mod-php curl git
-        systemctl enable apache2 || true
-        systemctl restart apache2 || true
+        apt-get update -qq || true
+        apt-get install -y -qq apache2 php php-cli libapache2-mod-php curl git || true
+        systemctl enable apache2 2>/dev/null || true
+        systemctl restart apache2 2>/dev/null || true
     elif command -v pacman >/dev/null 2>&1; then
-        pacman -Sy --noconfirm apache php php-apache git curl
-        systemctl enable httpd || true
-        systemctl restart httpd || true
+        pacman -Sy --noconfirm apache php php-apache git curl || true
+        systemctl enable httpd 2>/dev/null || true
+        systemctl restart httpd 2>/dev/null || true
     fi
 fi
 
@@ -84,7 +98,7 @@ fi
 if ! command -v php >/dev/null 2>&1; then
     echo -e "${YELLOW}[!] Installing PHP runtime...${NC}"
     if command -v apt-get >/dev/null 2>&1; then
-        apt-get update -qq
+        apt-get update -qq || true
         apt-get install -y -qq php-cli php || true
     fi
 fi
@@ -92,47 +106,50 @@ fi
 echo -e "${GREEN}✓ Web server environment verified.${NC}"
 
 # Preparation of files
-echo -e "\n${BLUE}[2/6]${NC} Preparing AllSee Application Files..."
+echo -e "\n${BLUE}[2/5]${NC} Fetching AllSee Application Files..."
 
 CURRENT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 BUILD_SOURCE=""
+TMP_CLONE="/tmp/allsee_pkg_$$"
 
-if [ -f "${CURRENT_DIR}/package.json" ] && [ -d "${CURRENT_DIR}/src" ]; then
-    echo -e "${GREEN}✓ Local repository source detected at ${CURRENT_DIR}${NC}"
+if [ -f "${CURRENT_DIR}/dist/index.html" ] || [ -f "${CURRENT_DIR}/index.html" ]; then
+    echo -e "${GREEN}✓ Local AllSee files detected at ${CURRENT_DIR}${NC}"
     BUILD_SOURCE="${CURRENT_DIR}"
 else
-    # Clone repository from github
-    TMP_CLONE="/tmp/allsee_build_$$"
-    echo -e "${CYAN}Cloning latest AllSee from ${REPO_URL}...${NC}"
     rm -rf "${TMP_CLONE}"
-    git clone --depth 1 "${REPO_URL}" "${TMP_CLONE}"
-    BUILD_SOURCE="${TMP_CLONE}"
-fi
-
-# Compile / Build Frontend
-echo -e "\n${BLUE}[3/6]${NC} Building AllSee Production Assets..."
-cd "${BUILD_SOURCE}"
-
-if [ -d "${BUILD_SOURCE}/dist" ] && [ -f "${BUILD_SOURCE}/dist/index.html" ]; then
-    echo -e "${GREEN}✓ Pre-built production package found.${NC}"
-else
-    if ! command -v npm >/dev/null 2>&1 || ! command -v node >/dev/null 2>&1; then
-        echo -e "${YELLOW}[!] Node.js not detected. Installing Node.js LTS...${NC}"
-        if command -v apt-get >/dev/null 2>&1; then
-            curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-            apt-get install -y -qq nodejs
-        elif command -v pacman >/dev/null 2>&1; then
-            pacman -Sy --noconfirm nodejs npm
+    mkdir -p "${TMP_CLONE}"
+    
+    # Try git first if available
+    CLONED=0
+    if command -v git >/dev/null 2>&1; then
+        echo -e "${CYAN}Cloning AllSee repository via git...${NC}"
+        if git clone --depth 1 "${REPO_URL}" "${TMP_CLONE}" 2>/dev/null; then
+            CLONED=1
         fi
     fi
 
-    echo -e "${CYAN}Installing dependencies & building Vite bundle...${NC}"
-    npm install --silent
-    npm run build
+    # If git wasn't available or failed, fallback to curl/wget tarball directly from GitHub
+    if [ "$CLONED" -eq 0 ]; then
+        echo -e "${CYAN}Downloading latest AllSee package archive from GitHub...${NC}"
+        if command -v curl >/dev/null 2>&1; then
+            curl -sSL "${TARBALL_URL}" | tar -xz -C "${TMP_CLONE}" --strip-components=1
+            CLONED=1
+        elif command -v wget >/dev/null 2>&1; then
+            wget -qO- "${TARBALL_URL}" | tar -xz -C "${TMP_CLONE}" --strip-components=1
+            CLONED=1
+        fi
+    fi
+
+    if [ "$CLONED" -eq 0 ]; then
+        echo -e "${RED}[ERROR] Unable to download AllSee from GitHub. Please install git or curl and try again.${NC}"
+        exit 1
+    fi
+
+    BUILD_SOURCE="${TMP_CLONE}"
 fi
 
-# Deploy files to /var/www/html/allsee
-echo -e "\n${BLUE}[4/6]${NC} Deploying to ${INSTALL_DIR}..."
+# Deploying Files to /var/www/html/allsee
+echo -e "\n${BLUE}[3/5]${NC} Installing AllSee to ${INSTALL_DIR}..."
 mkdir -p "${INSTALL_DIR}"
 
 # Backup existing config if any
@@ -140,12 +157,44 @@ if [ -f "${INSTALL_DIR}/favorites.ini" ]; then
     cp -f "${INSTALL_DIR}/favorites.ini" "/tmp/allsee_favorites.ini.bak"
 fi
 
-# Copy dist contents
-cp -r "${BUILD_SOURCE}/dist/"* "${INSTALL_DIR}/"
+# Check if dist/ folder exists in source
+if [ -d "${BUILD_SOURCE}/dist" ] && [ -f "${BUILD_SOURCE}/dist/index.html" ]; then
+    echo -e "${GREEN}✓ Deploying pre-compiled AllSee production bundle...${NC}"
+    cp -r "${BUILD_SOURCE}/dist/"* "${INSTALL_DIR}/"
+elif [ -f "${BUILD_SOURCE}/index.html" ] && [ -d "${BUILD_SOURCE}/assets" ]; then
+    # Direct pre-built assets
+    echo -e "${GREEN}✓ Deploying AllSee assets...${NC}"
+    cp -r "${BUILD_SOURCE}/"* "${INSTALL_DIR}/"
+else
+    # Need to build if node/npm is available
+    echo -e "${YELLOW}Pre-built dist not found in repository. Checking for Node.js...${NC}"
+    if ! command -v npm >/dev/null 2>&1 || ! command -v node >/dev/null 2>&1; then
+        echo -e "${YELLOW}[!] Node.js not detected. Installing Node.js LTS...${NC}"
+        if command -v apt-get >/dev/null 2>&1; then
+            curl -fsSL https://deb.nodesource.com/setup_20.x | bash - 2>/dev/null || true
+            apt-get install -y -qq nodejs || true
+        fi
+    fi
+    cd "${BUILD_SOURCE}"
+    npm install --silent
+    npm run build
+    cp -r "${BUILD_SOURCE}/dist/"* "${INSTALL_DIR}/"
+fi
 
 # Ensure api.php is deployed
 if [ -f "${BUILD_SOURCE}/public/api.php" ]; then
     cp -f "${BUILD_SOURCE}/public/api.php" "${INSTALL_DIR}/api.php"
+elif [ -f "${BUILD_SOURCE}/api.php" ]; then
+    cp -f "${BUILD_SOURCE}/api.php" "${INSTALL_DIR}/api.php"
+fi
+
+# Ensure uninstall.sh is in the installation directory
+if [ -f "${BUILD_SOURCE}/uninstall.sh" ]; then
+    cp -f "${BUILD_SOURCE}/uninstall.sh" "${INSTALL_DIR}/uninstall.sh"
+    chmod +x "${INSTALL_DIR}/uninstall.sh"
+elif [ -f "${BUILD_SOURCE}/public/uninstall.sh" ]; then
+    cp -f "${BUILD_SOURCE}/public/uninstall.sh" "${INSTALL_DIR}/uninstall.sh"
+    chmod +x "${INSTALL_DIR}/uninstall.sh"
 fi
 
 # Restore favorites.ini if existed
@@ -160,9 +209,10 @@ if [ -n "${TMP_CLONE:-}" ] && [ -d "${TMP_CLONE:-}" ]; then
 fi
 
 # Permissions and Asterisk Privileges
-echo -e "\n${BLUE}[5/6]${NC} Setting Permissions and Asterisk Permissions..."
+echo -e "\n${BLUE}[4/5]${NC} Setting Web Permissions & Asterisk CLI access..."
 chown -R "${WEB_USER}:${WEB_USER}" "${INSTALL_DIR}"
 chmod -R 755 "${INSTALL_DIR}"
+chmod +x "${INSTALL_DIR}/uninstall.sh" 2>/dev/null || true
 
 # Setup sudoers rule so web user can execute asterisk commands safely
 SUDOERS_FILE="/etc/sudoers.d/allsee"
@@ -175,7 +225,7 @@ if [ -f "${ASTERISK_BIN}" ]; then
 fi
 
 # Detect Local Server IP
-echo -e "\n${BLUE}[6/6]${NC} Finalizing Installation..."
+echo -e "\n${BLUE}[5/5]${NC} Finalizing Installation..."
 IP_ADDR=$(hostname -I 2>/dev/null | awk '{print $1}')
 if [ -z "${IP_ADDR}" ]; then
     IP_ADDR="127.0.0.1"
@@ -184,9 +234,9 @@ fi
 echo -e "\n${GREEN}${BOLD}======================================================${NC}"
 echo -e "${GREEN}${BOLD} AllSee Installation Completed Successfully!${NC}"
 echo -e "${GREEN}${BOLD}======================================================${NC}"
-echo -e "\nYou can now access AllSee from any web browser at:"
+echo -e "\nYou can now open AllSee from your browser at:"
 echo -e "  ${CYAN}${BOLD}http://${IP_ADDR}/allsee${NC}"
 echo -e "  (or: ${CYAN}http://$(hostname)/allsee${NC})"
-echo -e "\n${YELLOW}Useful commands:${NC}"
-echo -e "  - Uninstall AllSee: ${BOLD}sudo bash ${INSTALL_DIR}/uninstall.sh${NC} (or from repo)"
+echo -e "\n${YELLOW}Management commands:${NC}"
+echo -e "  - Uninstall AllSee: ${BOLD}sudo bash ${INSTALL_DIR}/uninstall.sh${NC}"
 echo -e "  - Check Asterisk:   ${BOLD}asterisk -rx 'rpt nodes <node>'${NC}\n"
