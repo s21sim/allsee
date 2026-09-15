@@ -41,12 +41,6 @@ INSTALL_DIRS=(
 )
 
 SUDOERS_FILE="/etc/sudoers.d/allsee"
-
-echo -e "\n${YELLOW}Are you sure you want to completely uninstall AllSee from this system? [y/N]${NC} "
-read -r CONFIRM
-if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
-    echo -e "${BLUE}Uninstallation cancelled.${NC}"
-    exit 0
 fi
 
 echo -e "\n${BLUE}[1/3]${NC} Removing AllSee web application files..."
