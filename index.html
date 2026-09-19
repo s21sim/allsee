@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AllSee - Secure Node Management Hub</title>
+    <title>AllSee - Secure AllStarLink Node Hub</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-deep: #030712;
-            --panel-bg: rgba(17, 24, 39, 0.82);
+            --panel-bg: rgba(17, 24, 39, 0.85);
             --border-line: rgba(255, 255, 255, 0.08);
             --cyan-accent: #06b6d4;
-            --cyan-glow: rgba(6, 182, 212, 0.3);
+            --cyan-glow: rgba(6, 182, 212, 0.25);
             --green-accent: #10b981;
-            --green-glow: rgba(16, 185, 129, 0.3);
+            --green-glow: rgba(16, 185, 129, 0.25);
             --red-accent: #f43f5e;
-            --red-glow: rgba(244, 63, 94, 0.3);
+            --red-glow: rgba(244, 63, 94, 0.25);
             --amber-accent: #f59e0b;
             --blue-accent: #3b82f6;
             --text-main: #f9fafb;
@@ -47,7 +47,7 @@
 
         .hub-box {
             width: 100%;
-            max-width: 450px;
+            max-width: 460px;
             background: var(--panel-bg);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
@@ -59,7 +59,6 @@
             overflow: hidden;
         }
 
-        /* কার্ডের উপরের ডেকোরেশন লাইন */
         .hub-box::before {
             content: '';
             position: absolute;
@@ -70,12 +69,11 @@
             background: linear-gradient(90deg, transparent, var(--cyan-accent), transparent);
         }
 
-        /* হেডার */
         .header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 24px;
+            margin-bottom: 22px;
         }
 
         .branding {
@@ -118,7 +116,7 @@
             background: rgba(244, 63, 94, 0.1);
             border: 1px solid rgba(244, 63, 94, 0.3);
             color: var(--red-accent);
-            padding: 6px 12px;
+            padding: 6px 14px;
             border-radius: 8px;
             font-size: 11px;
             font-weight: 600;
@@ -131,7 +129,6 @@
             color: #fff;
         }
 
-        /* ইনপুট ফিল্ড স্টাইল */
         .field-wrap {
             margin-bottom: 16px;
         }
@@ -170,7 +167,6 @@
             gap: 12px;
         }
 
-        /* বাটন গ্রিড */
         .btn-action {
             padding: 13px;
             border-radius: 12px;
@@ -232,19 +228,50 @@
             color: #451a03;
         }
 
-        .btn-blue {
-            background: rgba(59, 130, 246, 0.12);
-            border-color: rgba(59, 130, 246, 0.3);
-            color: #60a5fa;
-        }
-        .btn-blue:hover {
-            background: var(--blue-accent);
-            color: #0b1d3a;
+        /* কানেক্টেড নোডস প্যানেল */
+        .live-monitor-box {
+            background: rgba(2, 6, 23, 0.7);
+            border: 1px solid var(--border-line);
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 16px;
         }
 
-        /* টার্মিনাল কনসোল বক্স */
+        .live-monitor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .live-monitor-header span.title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-sub);
+            letter-spacing: 0.5px;
+        }
+
+        .badge-count {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: rgba(6, 182, 212, 0.15);
+            color: var(--cyan-accent);
+            font-weight: 700;
+        }
+
+        .nodes-content {
+            font-family: 'Fira Code', monospace;
+            font-size: 12.5px;
+            color: #a5f3fc;
+            min-height: 24px;
+            white-space: pre-wrap;
+            line-height: 1.4;
+        }
+
+        /* টার্মিনাল কনসোল */
         .terminal-box {
-            margin-top: 20px;
             background: #020617;
             border: 1px solid var(--border-line);
             border-radius: 14px;
@@ -265,8 +292,8 @@
 
         .terminal-output {
             padding: 12px;
-            min-height: 90px;
-            max-height: 120px;
+            min-height: 85px;
+            max-height: 110px;
             overflow-y: auto;
             font-family: 'Fira Code', monospace;
             font-size: 12px;
@@ -276,7 +303,6 @@
             word-break: break-all;
         }
 
-        /* হাইড/শো ক্লাস */
         .view-section {
             display: none;
         }
@@ -307,7 +333,7 @@
         <button class="btn-logout" id="logoutBtn" style="display: none;" onclick="processLogout()">লগআউট</button>
     </div>
 
-    <!-- সেকশন ১: লগইন ভিউ -->
+    <!-- ১. লগইন ভিউ -->
     <div class="view-section" id="loginView">
         <div class="field-wrap">
             <label for="loginUser">ইউজারনেম</label>
@@ -321,7 +347,7 @@
         <div class="error-msg" id="loginError"></div>
     </div>
 
-    <!-- সেকশন ২: নোড ড্যাশবোর্ড ভিউ -->
+    <!-- ২. ড্যাশবোর্ড ভিউ -->
     <div class="view-section" id="dashboardView">
         <div class="grid-two-cols field-wrap">
             <div>
@@ -338,21 +364,30 @@
             <button class="btn-action btn-connect" onclick="sendCommand('connect')">Connect (*3)</button>
             <button class="btn-action btn-disconnect" onclick="sendCommand('disconnect')">Disconnect (*1)</button>
             <button class="btn-action btn-amber btn-full" onclick="sendCommand('disconnect_all')">Disconnect All (*76)</button>
-            <button class="btn-action btn-blue btn-full" onclick="sendCommand('status')">Live Node Status</button>
         </div>
 
+        <!-- লাইভ কানেক্টেড নোড প্যানেল -->
+        <div class="live-monitor-box">
+            <div class="live-monitor-header">
+                <span class="title">Connected Nodes</span>
+                <span class="badge-count" id="activeCount">Checking...</span>
+            </div>
+            <div class="nodes-content" id="nodesDisplay">নোডের স্ট্যাটাস যাচাই করা হচ্ছে...</div>
+        </div>
+
+        <!-- CLI রেসপন্স টার্মিনাল -->
         <div class="terminal-box">
             <div class="terminal-head">
                 <span>cli@allstarlink:~</span>
                 <span id="loaderNotice" style="display:none; color: var(--cyan-accent);">Processing...</span>
             </div>
-            <div class="terminal-output" id="outputWindow">সিস্টেম প্রস্তুত...</div>
+            <div class="terminal-output" id="outputWindow">System Ready.</div>
         </div>
     </div>
 </div>
 
 <script>
-// পেজ লোড হওয়ার সাথে সাথে সেশন চেক
+// পেজ লোড হলে সেশন চেক করা
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         const res = await fetch('api.php', {
@@ -382,9 +417,9 @@ function showDashboard() {
     document.getElementById('loginView').classList.remove('active');
     document.getElementById('dashboardView').classList.add('active');
     document.getElementById('logoutBtn').style.display = 'block';
+    refreshNodes();
 }
 
-// লগইন হ্যান্ডলার
 async function processLogin() {
     const username = document.getElementById('loginUser').value.trim();
     const password = document.getElementById('loginPass').value.trim();
@@ -411,11 +446,10 @@ async function processLogin() {
             errorElem.innerText = data.message;
         }
     } catch (err) {
-        errorElem.innerText = 'সার্ভার রেসপন্স করতে পারছে না!';
+        errorElem.innerText = 'সার্ভারে সংযোগ করা সম্ভব হয়নি!';
     }
 }
 
-// লগআউট হ্যান্ডলার
 async function processLogout() {
     await fetch('api.php', {
         method: 'POST',
@@ -425,7 +459,7 @@ async function processLogout() {
     showLogin();
 }
 
-// Asterisk কমান্ড হ্যান্ডলার
+// কমান্ড পাঠানো
 async function sendCommand(action) {
     const localNode = document.getElementById('localNode').value.trim();
     const targetNode = document.getElementById('targetNode').value.trim();
@@ -433,7 +467,7 @@ async function sendCommand(action) {
     const loader = document.getElementById('loaderNotice');
 
     if (!localNode) {
-        alert('লোকাল নোড নম্বর প্রদান করুন!');
+        alert('লোকাল নোড নম্বর দিন!');
         return;
     }
 
@@ -443,7 +477,7 @@ async function sendCommand(action) {
     }
 
     loader.style.display = 'inline';
-    outputElem.innerText = '> কমান্ড পাঠানো হচ্ছে...';
+    outputElem.innerText = '> Command sending...';
 
     try {
         const res = await fetch('api.php', {
@@ -453,7 +487,7 @@ async function sendCommand(action) {
         });
 
         if (res.status === 401) {
-            alert('সেশনের মেয়াদ শেষ হয়েছে! অনুগ্রহ করে আবার লগইন করুন।');
+            alert('লগইন মেয়াদ শেষ! পুনরায় লগইন করুন।');
             showLogin();
             return;
         }
@@ -462,15 +496,57 @@ async function sendCommand(action) {
         loader.style.display = 'none';
 
         if (data.status === 'success') {
-            outputElem.innerText = data.output ? data.output : '> Action completed successfully.';
+            outputElem.innerText = data.output ? data.output : '> Command executed successfully.';
+            // কমান্ড চালানোর ১ সেকেন্ড পর লাইভ নোড লিস্ট আপডেট হবে
+            setTimeout(refreshNodes, 1000);
         } else {
             outputElem.innerText = '! Error: ' + data.message;
         }
     } catch (err) {
         loader.style.display = 'none';
-        outputElem.innerText = '! সংযোগ বিচ্ছিন্ন হয়েছে অথবা সার্ভার অফলাইন।';
+        outputElem.innerText = '! সার্ভারের সাথে যোগাযোগ বিচ্ছিন্ন হয়েছে।';
     }
 }
+
+// লাইভ কানেক্টেড নোড রিফ্রেশার
+async function refreshNodes() {
+    const localNode = document.getElementById('localNode').value.trim();
+    if (!localNode) return;
+
+    try {
+        const res = await fetch('api.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'status', localNode })
+        });
+        const data = await res.json();
+        
+        const nodesDisplay = document.getElementById('nodesDisplay');
+        const activeCount = document.getElementById('activeCount');
+
+        if (data.status === 'success') {
+            const raw = (data.output || '').trim();
+            if (raw.length > 0) {
+                nodesDisplay.innerText = raw;
+                const lines = raw.split('\n').filter(l => l.trim().length > 0);
+                activeCount.innerText = `${lines.length} Linked`;
+            } else {
+                nodesDisplay.innerText = "কোনো নোড যুক্ত নেই (No nodes connected)";
+                activeCount.innerText = "0 Linked";
+            }
+        }
+    } catch (e) {
+        console.error("Auto sync failed:", e);
+    }
+}
+
+// প্রতি ৫ সেকেন্ড পর পর ব্যাকগ্রাউন্ডে স্বয়ংক্রিয় রিফ্রেশ
+setInterval(() => {
+    const dash = document.getElementById('dashboardView');
+    if (dash && dash.classList.contains('active')) {
+        refreshNodes();
+    }
+}, 5000);
 </script>
 
 </body>
