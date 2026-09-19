@@ -37,7 +37,7 @@ if ($action === 'logout') {
     exit;
 }
 
-// সেশন চেক হ্যান্ডলার
+// সেশন যাচাই হ্যান্ডলার
 if ($action === 'check_session') {
     echo json_encode([
         'status' => 'success',
@@ -46,14 +46,14 @@ if ($action === 'check_session') {
     exit;
 }
 
-// অথেনটিকেশন যাচাই: লগইন ছাড়া পরবর্তী কোনো কমান্ড রান হবে না
+// অথেনটিকেশন চেকিং (লগইন ছাড়া নিচের কমান্ড কাজ করবে না)
 if (empty($_SESSION['authenticated'])) {
     http_response_code(401);
     echo json_encode(['status' => 'error', 'message' => 'অননুমোদিত অ্যাক্সেস! দয়া করে লগইন করুন।']);
     exit;
 }
 
-// Asterisk CLI কমান্ড এক্সিকিউশন
+// Asterisk CLI হ্যান্ডলার
 $localNode  = isset($data['localNode']) ? preg_replace('/[^0-9]/', '', $data['localNode']) : '';
 $targetNode = isset($data['targetNode']) ? preg_replace('/[^0-9]/', '', $data['targetNode']) : '';
 
@@ -67,7 +67,7 @@ $command = '';
 switch ($action) {
     case 'connect':
         if (empty($targetNode)) {
-            echo json_encode(['status' => 'error', 'message' => 'টার্গেট নোড নম্বর প্রয়োজন।']);
+            echo json_encode(['status' => 'error', 'message' => 'টার্গেট নোড নম্বর দিন।']);
             exit;
         }
         $command = "sudo /usr/sbin/asterisk -rx \"rpt fun {$localNode} *3{$targetNode}\"";
@@ -75,7 +75,7 @@ switch ($action) {
 
     case 'disconnect':
         if (empty($targetNode)) {
-            echo json_encode(['status' => 'error', 'message' => 'টার্গেট নোড নম্বর প্রয়োজন।']);
+            echo json_encode(['status' => 'error', 'message' => 'টার্গেট নোড নম্বর দিন।']);
             exit;
         }
         $command = "sudo /usr/sbin/asterisk -rx \"rpt fun {$localNode} *1{$targetNode}\"";
@@ -86,7 +86,8 @@ switch ($action) {
         break;
 
     case 'status':
-        $command = "sudo /usr/sbin/asterisk -rx \"rpt lnodes {$localNode}\"";
+        // rpt nodes কমান্ডের মাধ্যমে বর্তমানে সংযুক্ত সকল নোডের লাইভ তালিকা পাওয়া যায়
+        $command = "sudo /usr/sbin/asterisk -rx \"rpt nodes {$localNode}\"";
         break;
 
     default:
@@ -99,5 +100,5 @@ $output = shell_exec($command . " 2>&1");
 echo json_encode([
     'status' => 'success',
     'action' => $action,
-    'output' => !empty($output) ? trim($output) : 'Command executed successfully with no return text.'
+    'output' => !empty($output) ? trim($output) : ''
 ]);
