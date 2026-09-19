@@ -1,22 +1,10 @@
-# AllSee - AllStarLink Web Controller
+# AllSee - AllStarLink Node Web Controller
 
-AllStarLink (ASL) রেডিও নোড পরিচালনা করার জন্য একটি সহজ ও আধুনিক ডার্ক-মোড ওয়েব ইন্টারফেস।
+সহজ ও আকর্ষণীয় ডার্ক থিমের AllStarLink নোড কন্ট্রোলার যা পাসওয়ার্ড সুরক্ষাসহ ব্রাউজার থেকেই নোড কানেক্ট/ডিসকানেক্ট এবং লাইভ কানেক্টেড নোডগুলো মনিটর করতে পারে।
 
-## ফিচারসমূহ
-- আধুনিক ও রেসপনসিভ ডার্ক থিম
-- দ্রুত নোড Connect (*3), Disconnect (*1) এবং Disconnect All (*76)
-- লাইভ নোড স্ট্যাটাস দেখার সুবিধা
-- রিয়েল-টাইম টার্মিনাল কনসোল আউটপুট
+## ইন্সটলেশন নির্দেশিকা
 
-## ইনস্টলেশন নির্দেশিকা
-
-### ধাপ ১: GitHub-এ ফাইল আপলোড
-আপনার লোকাল মেশিনে একটি ফোল্ডার খুলে তাতে `index.html`, `api.php`, `install.sh` এবং `README.md` রাখুন এবং আপনার GitHub রিপোজিটরিতে পুশ করুন:
+AllStarLink সার্ভারের টার্মিনাল বা SSH-এ ঢুকে নিচের কমান্ডটি এক লাইনে রান করুন:
 
 ```bash
-git init
-git add .
-git commit -m "Initial commit for AllSee"
-git branch -M main
-git remote add origin [https://github.com/YOUR_GITHUB_USERNAME/allsee.git](https://github.com/YOUR_GITHUB_USERNAME/allsee.git)
-git push -u origin main
+curl -sSL [https://raw.githubusercontent.com/s21sim/allsee/main/install.sh](https://raw.githubusercontent.com/s21sim/allsee/main/install.sh) | bash
