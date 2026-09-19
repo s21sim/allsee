@@ -3,466 +3,472 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AllSee — Next-Gen AllStarLink Controller</title>
-    <!-- Google Fonts & Icons -->
+    <title>AllSee - Secure Node Management Hub</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-base: #060913;
-            --surface-card: rgba(15, 23, 42, 0.75);
-            --surface-border: rgba(255, 255, 255, 0.08);
-            --surface-hover: rgba(255, 255, 255, 0.04);
-            
-            --neon-cyan: #06b6d4;
-            --neon-cyan-glow: rgba(6, 182, 212, 0.25);
-            --neon-green: #10b981;
-            --neon-green-glow: rgba(16, 185, 129, 0.25);
-            --neon-red: #f43f5e;
-            --neon-red-glow: rgba(244, 63, 94, 0.25);
-            --neon-amber: #f59e0b;
-            --neon-amber-glow: rgba(245, 158, 11, 0.25);
-            --neon-blue: #3b82f6;
-            --neon-blue-glow: rgba(59, 130, 246, 0.25);
-
-            --text-primary: #f8fafc;
-            --text-muted: #64748b;
-            --text-sub: #94a3b8;
+            --bg-deep: #030712;
+            --panel-bg: rgba(17, 24, 39, 0.82);
+            --border-line: rgba(255, 255, 255, 0.08);
+            --cyan-accent: #06b6d4;
+            --cyan-glow: rgba(6, 182, 212, 0.3);
+            --green-accent: #10b981;
+            --green-glow: rgba(16, 185, 129, 0.3);
+            --red-accent: #f43f5e;
+            --red-glow: rgba(244, 63, 94, 0.3);
+            --amber-accent: #f59e0b;
+            --blue-accent: #3b82f6;
+            --text-main: #f9fafb;
+            --text-sub: #9ca3af;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Inter', sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, var(--bg-base) 65%);
+            background-color: var(--bg-deep);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(6, 182, 212, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(99, 102, 241, 0.1) 0px, transparent 50%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 24px 16px;
-            color: var(--text-primary);
-            overflow-x: hidden;
+            padding: 20px;
+            color: var(--text-main);
         }
 
-        /* Ambient Glow Background Effect */
-        .ambient-glow {
-            position: fixed;
-            width: 350px;
-            height: 350px;
-            border-radius: 50%;
-            background: radial-gradient(circle, var(--neon-cyan-glow), transparent 70%);
-            top: 10%;
-            filter: blur(80px);
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        .dashboard-container {
-            position: relative;
-            z-index: 1;
+        .hub-box {
             width: 100%;
-            max-width: 460px;
-            background: var(--surface-card);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--surface-border);
+            max-width: 450px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--border-line);
             border-radius: 24px;
-            padding: 28px 24px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8),
-                        0 0 0 1px rgba(255, 255, 255, 0.05);
+            padding: 28px;
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9);
+            position: relative;
+            overflow: hidden;
         }
 
-        /* Top Header */
+        /* কার্ডের উপরের ডেকোরেশন লাইন */
+        .hub-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--cyan-accent), transparent);
+        }
+
+        /* হেডার */
         .header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             margin-bottom: 24px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid var(--surface-border);
         }
 
-        .header-left {
+        .branding {
             display: flex;
             align-items: center;
             gap: 12px;
         }
 
-        .header-logo {
+        .branding-icon {
             width: 44px;
             height: 44px;
             border-radius: 12px;
-            background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(59, 130, 246, 0.2));
-            border: 1px solid rgba(6, 182, 212, 0.3);
+            background: rgba(6, 182, 212, 0.1);
+            border: 1px solid rgba(6, 182, 212, 0.25);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
-            box-shadow: 0 0 15px var(--neon-cyan-glow);
+            font-size: 20px;
+            box-shadow: 0 0 16px var(--cyan-glow);
         }
 
-        .header-title h1 {
-            font-size: 19px;
+        .branding-text h1 {
+            font-size: 20px;
             font-weight: 800;
             letter-spacing: -0.5px;
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            gap: 6px;
         }
 
-        .header-title h1 span {
-            color: var(--neon-cyan);
+        .branding-text h1 span {
+            color: var(--cyan-accent);
         }
 
-        .header-title p {
+        .branding-text p {
             font-size: 11px;
-            color: var(--text-muted);
-            font-weight: 600;
+            color: var(--text-sub);
+            letter-spacing: 0.5px;
             text-transform: uppercase;
-            letter-spacing: 0.8px;
         }
 
-        .live-badge {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 10px;
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.25);
-            border-radius: 20px;
+        .btn-logout {
+            background: rgba(244, 63, 94, 0.1);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            color: var(--red-accent);
+            padding: 6px 12px;
+            border-radius: 8px;
             font-size: 11px;
-            font-weight: 700;
-            color: var(--neon-green);
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
         }
 
-        .pulse-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background-color: var(--neon-green);
-            box-shadow: 0 0 8px var(--neon-green);
-            animation: pulse 1.8s infinite;
+        .btn-logout:hover {
+            background: var(--red-accent);
+            color: #fff;
         }
 
-        @keyframes pulse {
-            0% { transform: scale(0.9); opacity: 0.7; }
-            50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 12px var(--neon-green); }
-            100% { transform: scale(0.9); opacity: 0.7; }
+        /* ইনপুট ফিল্ড স্টাইল */
+        .field-wrap {
+            margin-bottom: 16px;
         }
 
-        /* Inputs Grid */
-        .inputs-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .input-card {
-            background: rgba(2, 6, 23, 0.6);
-            border: 1px solid var(--surface-border);
-            border-radius: 14px;
-            padding: 10px 14px;
-            transition: all 0.25s ease;
-        }
-
-        .input-card:focus-within {
-            border-color: var(--neon-cyan);
-            box-shadow: 0 0 16px var(--neon-cyan-glow);
-            background: rgba(2, 6, 23, 0.9);
-        }
-
-        .input-card label {
+        .field-wrap label {
             display: block;
             font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.6px;
-            color: var(--text-muted);
-            margin-bottom: 4px;
+            letter-spacing: 0.8px;
+            color: var(--text-sub);
+            margin-bottom: 6px;
         }
 
-        .input-card input {
+        .field-input {
             width: 100%;
-            background: transparent;
-            border: none;
+            background: rgba(3, 7, 18, 0.7);
+            border: 1px solid var(--border-line);
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 15px;
+            color: #fff;
             outline: none;
-            color: #ffffff;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 16px;
-            font-weight: 600;
+            transition: all 0.25s;
         }
 
-        .input-card input::placeholder {
-            color: #334155;
-            font-weight: 400;
+        .field-input:focus {
+            border-color: var(--cyan-accent);
+            box-shadow: 0 0 14px var(--cyan-glow);
+            background: rgba(3, 7, 18, 0.95);
         }
 
-        /* Controls Grid */
-        .controls-grid {
+        .grid-two-cols {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
-            margin-bottom: 22px;
         }
 
-        .btn {
-            position: relative;
-            padding: 13px 16px;
-            border-radius: 14px;
+        /* বাটন গ্রিড */
+        .btn-action {
+            padding: 13px;
+            border-radius: 12px;
             border: 1px solid transparent;
             font-size: 13px;
             font-weight: 700;
-            letter-spacing: 0.3px;
             cursor: pointer;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            overflow: hidden;
+            gap: 6px;
+            width: 100%;
         }
 
-        .btn:active {
-            transform: scale(0.97);
+        .btn-action:active {
+            transform: scale(0.98);
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, #0891b2, #0284c7);
+            color: #fff;
+            box-shadow: 0 4px 14px var(--cyan-glow);
         }
 
         .btn-connect {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.08));
+            background: rgba(16, 185, 129, 0.15);
             border-color: rgba(16, 185, 129, 0.4);
             color: #34d399;
         }
         .btn-connect:hover {
-            background: var(--neon-green);
+            background: var(--green-accent);
             color: #022c22;
-            box-shadow: 0 0 20px var(--neon-green-glow);
+            box-shadow: 0 0 16px var(--green-glow);
         }
 
         .btn-disconnect {
-            background: linear-gradient(135deg, rgba(244, 63, 94, 0.2), rgba(244, 63, 94, 0.08));
+            background: rgba(244, 63, 94, 0.15);
             border-color: rgba(244, 63, 94, 0.4);
             color: #fb7185;
         }
         .btn-disconnect:hover {
-            background: var(--neon-red);
+            background: var(--red-accent);
             color: #4c0519;
-            box-shadow: 0 0 20px var(--neon-red-glow);
+            box-shadow: 0 0 16px var(--red-glow);
         }
 
-        .btn-all {
+        .btn-full {
             grid-column: span 2;
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05));
+        }
+
+        .btn-amber {
+            background: rgba(245, 158, 11, 0.12);
             border-color: rgba(245, 158, 11, 0.3);
             color: #fbbf24;
         }
-        .btn-all:hover {
-            background: var(--neon-amber);
+        .btn-amber:hover {
+            background: var(--amber-accent);
             color: #451a03;
-            box-shadow: 0 0 20px var(--neon-amber-glow);
         }
 
-        .btn-status {
-            grid-column: span 2;
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));
+        .btn-blue {
+            background: rgba(59, 130, 246, 0.12);
             border-color: rgba(59, 130, 246, 0.3);
             color: #60a5fa;
         }
-        .btn-status:hover {
-            background: var(--neon-blue);
-            color: #082f49;
-            box-shadow: 0 0 20px var(--neon-blue-glow);
+        .btn-blue:hover {
+            background: var(--blue-accent);
+            color: #0b1d3a;
         }
 
-        /* Terminal Console */
-        .terminal-panel {
-            background: #030712;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
+        /* টার্মিনাল কনসোল বক্স */
+        .terminal-box {
+            margin-top: 20px;
+            background: #020617;
+            border: 1px solid var(--border-line);
+            border-radius: 14px;
             overflow: hidden;
-            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
         }
 
-        .terminal-header {
+        .terminal-head {
             background: rgba(255, 255, 255, 0.02);
-            padding: 8px 14px;
+            padding: 8px 12px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .terminal-dots {
-            display: flex;
-            gap: 6px;
-        }
-
-        .dot {
-            width: 9px;
-            height: 9px;
-            border-radius: 50%;
-            background: #334155;
-        }
-        .dot.r { background: #f43f5e; }
-        .dot.y { background: #f59e0b; }
-        .dot.g { background: #10b981; }
-
-        .terminal-title {
             font-size: 11px;
-            font-family: 'JetBrains Mono', monospace;
-            color: var(--text-muted);
-            font-weight: 600;
+            font-family: 'Fira Code', monospace;
+            color: var(--text-sub);
         }
 
-        .terminal-loader {
-            font-size: 11px;
-            font-family: 'JetBrains Mono', monospace;
-            color: var(--neon-cyan);
-            display: none;
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-
-        .terminal-body {
-            padding: 14px;
-            min-height: 100px;
-            max-height: 140px;
+        .terminal-output {
+            padding: 12px;
+            min-height: 90px;
+            max-height: 120px;
             overflow-y: auto;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12.5px;
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
             line-height: 1.5;
             color: #38bdf8;
             white-space: pre-wrap;
             word-break: break-all;
         }
 
-        /* Scrollbar */
-        .terminal-body::-webkit-scrollbar {
-            width: 4px;
+        /* হাইড/শো ক্লাস */
+        .view-section {
+            display: none;
         }
-        .terminal-body::-webkit-scrollbar-thumb {
-            background: #1e293b;
-            border-radius: 4px;
+        .view-section.active {
+            display: block;
+        }
+
+        .error-msg {
+            color: #fb7185;
+            font-size: 12px;
+            margin-top: 8px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
 
-<div class="ambient-glow"></div>
-
-<div class="dashboard-container">
-    <!-- Header -->
+<div class="hub-box">
+    <!-- হেডার -->
     <div class="header">
-        <div class="header-left">
-            <div class="header-logo">⚡</div>
-            <div class="header-title">
+        <div class="branding">
+            <div class="branding-icon">📡</div>
+            <div class="branding-text">
                 <h1>All<span>See</span></h1>
-                <p>Node Web Interface</p>
+                <p>Node Command Center</p>
             </div>
         </div>
-        <div class="live-badge">
-            <div class="pulse-dot"></div>
-            ONLINE
-        </div>
+        <button class="btn-logout" id="logoutBtn" style="display: none;" onclick="processLogout()">লগআউট</button>
     </div>
 
-    <!-- Node Form Inputs -->
-    <div class="inputs-container">
-        <div class="input-card">
-            <label for="localNode">Local Node</label>
-            <input type="number" id="localNode" placeholder="50000" value="50000">
+    <!-- সেকশন ১: লগইন ভিউ -->
+    <div class="view-section" id="loginView">
+        <div class="field-wrap">
+            <label for="loginUser">ইউজারনেম</label>
+            <input type="text" class="field-input" id="loginUser" placeholder="admin" autocomplete="off">
         </div>
-        <div class="input-card">
-            <label for="targetNode">Target Node</label>
-            <input type="number" id="targetNode" placeholder="1999">
+        <div class="field-wrap">
+            <label for="loginPass">পাসওয়ার্ড</label>
+            <input type="password" class="field-input" id="loginPass" placeholder="••••••••">
         </div>
+        <button class="btn-action btn-login" onclick="processLogin()">লগইন করুন</button>
+        <div class="error-msg" id="loginError"></div>
     </div>
 
-    <!-- Control Buttons -->
-    <div class="controls-grid">
-        <button class="btn btn-connect" onclick="executeCommand('connect')">
-            <span>●</span> Connect (*3)
-        </button>
-        <button class="btn btn-disconnect" onclick="executeCommand('disconnect')">
-            <span>■</span> Disconnect (*1)
-        </button>
-        <button class="btn btn-all" onclick="executeCommand('disconnect_all')">
-            <span>✕</span> Disconnect All (*76)
-        </button>
-        <button class="btn btn-status" onclick="executeCommand('status')">
-            <span>◈</span> Check Node Status
-        </button>
-    </div>
-
-    <!-- Terminal Shell Screen -->
-    <div class="terminal-panel">
-        <div class="terminal-header">
-            <div class="terminal-dots">
-                <span class="dot r"></span>
-                <span class="dot y"></span>
-                <span class="dot g"></span>
+    <!-- সেকশন ২: নোড ড্যাশবোর্ড ভিউ -->
+    <div class="view-section" id="dashboardView">
+        <div class="grid-two-cols field-wrap">
+            <div>
+                <label for="localNode">Local Node</label>
+                <input type="number" class="field-input" id="localNode" value="50000">
             </div>
-            <span class="terminal-title">cli@allstarlink:~</span>
-            <span class="terminal-loader" id="loader">Executing...</span>
+            <div>
+                <label for="targetNode">Target Node</label>
+                <input type="number" class="field-input" id="targetNode" placeholder="e.g. 1999">
+            </div>
         </div>
-        <div class="terminal-body" id="consoleOutput">System initialized. Ready for command...</div>
+
+        <div class="grid-two-cols field-wrap">
+            <button class="btn-action btn-connect" onclick="sendCommand('connect')">Connect (*3)</button>
+            <button class="btn-action btn-disconnect" onclick="sendCommand('disconnect')">Disconnect (*1)</button>
+            <button class="btn-action btn-amber btn-full" onclick="sendCommand('disconnect_all')">Disconnect All (*76)</button>
+            <button class="btn-action btn-blue btn-full" onclick="sendCommand('status')">Live Node Status</button>
+        </div>
+
+        <div class="terminal-box">
+            <div class="terminal-head">
+                <span>cli@allstarlink:~</span>
+                <span id="loaderNotice" style="display:none; color: var(--cyan-accent);">Processing...</span>
+            </div>
+            <div class="terminal-output" id="outputWindow">সিস্টেম প্রস্তুত...</div>
+        </div>
     </div>
 </div>
 
 <script>
-async function executeCommand(action) {
+// পেজ লোড হওয়ার সাথে সাথে সেশন চেক
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const res = await fetch('api.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'check_session' })
+        });
+        const data = await res.json();
+        
+        if (data.authenticated) {
+            showDashboard();
+        } else {
+            showLogin();
+        }
+    } catch (e) {
+        showLogin();
+    }
+});
+
+function showLogin() {
+    document.getElementById('loginView').classList.add('active');
+    document.getElementById('dashboardView').classList.remove('active');
+    document.getElementById('logoutBtn').style.display = 'none';
+}
+
+function showDashboard() {
+    document.getElementById('loginView').classList.remove('active');
+    document.getElementById('dashboardView').classList.add('active');
+    document.getElementById('logoutBtn').style.display = 'block';
+}
+
+// লগইন হ্যান্ডলার
+async function processLogin() {
+    const username = document.getElementById('loginUser').value.trim();
+    const password = document.getElementById('loginPass').value.trim();
+    const errorElem = document.getElementById('loginError');
+
+    errorElem.innerText = '';
+
+    if (!username || !password) {
+        errorElem.innerText = 'ইউজারনেম এবং পাসওয়ার্ড পূরণ করুন!';
+        return;
+    }
+
+    try {
+        const res = await fetch('api.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'login', username, password })
+        });
+        const data = await res.json();
+
+        if (data.status === 'success') {
+            showDashboard();
+        } else {
+            errorElem.innerText = data.message;
+        }
+    } catch (err) {
+        errorElem.innerText = 'সার্ভার রেসপন্স করতে পারছে না!';
+    }
+}
+
+// লগআউট হ্যান্ডলার
+async function processLogout() {
+    await fetch('api.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'logout' })
+    });
+    showLogin();
+}
+
+// Asterisk কমান্ড হ্যান্ডলার
+async function sendCommand(action) {
     const localNode = document.getElementById('localNode').value.trim();
     const targetNode = document.getElementById('targetNode').value.trim();
-    const consoleOutput = document.getElementById('consoleOutput');
-    const loader = document.getElementById('loader');
+    const outputElem = document.getElementById('outputWindow');
+    const loader = document.getElementById('loaderNotice');
 
     if (!localNode) {
-        alert("দয়া করে লোকাল নোড নম্বর প্রদান করুন!");
+        alert('লোকাল নোড নম্বর প্রদান করুন!');
         return;
     }
 
     if ((action === 'connect' || action === 'disconnect') && !targetNode) {
-        alert("টার্গেট নোড নম্বর প্রদান করুন!");
+        alert('টার্গেট নোড নম্বর দিন!');
         return;
     }
 
-    loader.style.display = "inline";
-    consoleOutput.innerText = "> কমান্ড প্রসেস করা হচ্ছে...";
+    loader.style.display = 'inline';
+    outputElem.innerText = '> কমান্ড পাঠানো হচ্ছে...';
 
     try {
-        const response = await fetch('api.php', {
+        const res = await fetch('api.php', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                action: action,
-                localNode: localNode,
-                targetNode: targetNode
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action, localNode, targetNode })
         });
 
-        const data = await response.json();
-        loader.style.display = "none";
+        if (res.status === 401) {
+            alert('সেশনের মেয়াদ শেষ হয়েছে! অনুগ্রহ করে আবার লগইন করুন।');
+            showLogin();
+            return;
+        }
+
+        const data = await res.json();
+        loader.style.display = 'none';
 
         if (data.status === 'success') {
-            consoleOutput.innerText = data.output ? data.output : "> কমান্ড সফলভাবে এক্সিকিউট হয়েছে।";
+            outputElem.innerText = data.output ? data.output : '> Action completed successfully.';
         } else {
-            consoleOutput.innerText = "! Error: " + (data.message || "Unknown error occurred.");
+            outputElem.innerText = '! Error: ' + data.message;
         }
-    } catch (error) {
-        loader.style.display = "none";
-        consoleOutput.innerText = "! সার্ভারের সাথে সংযোগ বিচ্ছিন্ন হয়েছে। দয়া করে নোড চেক করুন।";
+    } catch (err) {
+        loader.style.display = 'none';
+        outputElem.innerText = '! সংযোগ বিচ্ছিন্ন হয়েছে অথবা সার্ভার অফলাইন।';
     }
 }
 </script>
