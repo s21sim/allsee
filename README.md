@@ -7,4 +7,4 @@
 AllStarLink সার্ভারের টার্মিনাল বা SSH-এ ঢুকে নিচের কমান্ডটি এক লাইনে রান করুন:
 
 ```bash
-curl -sSL [https://raw.githubusercontent.com/s21sim/allsee/main/install.sh](https://raw.githubusercontent.com/s21sim/allsee/main/install.sh) | bash
+curl -sSL https://raw.githubusercontent.com/s21sim/allsee/main/install.sh | bash
