@@ -4,7 +4,7 @@ header('Content-Type: application/json');
 
 // ডিফল্ট লগইন ক্রেডেনশিয়াল (প্রয়োজনে পরিবর্তন করে নেবেন)
 define('ADMIN_USER', 'admin');
-define('ADMIN_PASS', 'allsee123');
+define('ADMIN_PASS', 'admin123');
 
 $rawInput = file_get_contents('php://input');
 $data = json_decode($rawInput, true);
