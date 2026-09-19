@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AllSee - AllStarLink Node Controller</title>
+    <style>
+        :root {
+            --bg-color: #0b1120;
+            --card-bg: #1e293b;
+            --input-bg: #0f172a;
+            --border-color: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-amber: #f59e0b;
+            --accent-cyan: #06b6d4;
+            --accent-blue: #3b82f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .dashboard-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            padding: 24px;
+            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.6);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: var(--accent-cyan);
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .header p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 16px;
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            border-color: var(--accent-cyan);
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 12px 14px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #ffffff;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-connect {
+            background-color: var(--accent-green);
+        }
+        .btn-connect:hover { background-color: #059669; }
+
+        .btn-disconnect {
+            background-color: var(--accent-red);
+        }
+        .btn-disconnect:hover { background-color: #dc2626; }
+
+        .btn-disconnect-all {
+            background-color: var(--accent-amber);
+            grid-column: span 2;
+        }
+        .btn-disconnect-all:hover { background-color: #d97706; }
+
+        .btn-status {
+            background-color: var(--accent-blue);
+            grid-column: span 2;
+        }
+        .btn-status:hover { background-color: #2563eb; }
+
+        .console-container {
+            margin-top: 24px;
+        }
+
+        .console-header {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .console-box {
+            background-color: #000000;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 13px;
+            color: #38bdf8;
+            height: 120px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-card">
+    <div class="header">
+        <h1>📻 AllSee Controller</h1>
+        <p>AllStarLink Easy Control Panel</p>
+    </div>
+
+    <div class="form-group">
+        <label for="localNode">Local Node</label>
+        <input type="number" id="localNode" placeholder="আপনার লোকাল নোড (e.g. 50000)" value="50000">
+    </div>
+
+    <div class="form-group">
+        <label for="targetNode">Target Node</label>
+        <input type="number" id="targetNode" placeholder="টার্গেট নোড (e.g. 1999)">
+    </div>
+
+    <div class="button-grid">
+        <button class="btn-connect" onclick="executeCommand('connect')">Connect (*3)</button>
+        <button class="btn-disconnect" onclick="executeCommand('disconnect')">Disconnect (*1)</button>
+        <button class="btn-disconnect-all" onclick="executeCommand('disconnect_all')">Disconnect All (*76)</button>
+        <button class="btn-status" onclick="executeCommand('status')">Check Status</button>
+    </div>
+
+    <div class="console-container">
+        <div class="console-header">
+            <span>Terminal Output</span>
+            <span id="loader" style="display:none; color: var(--accent-cyan);">Executing...</span>
+        </div>
+        <div class="console-box" id="consoleOutput">সিস্টেম প্রস্তুত...</div>
+    </div>
+</div>
+
+<script>
+async function executeCommand(action) {
+    const localNode = document.getElementById('localNode').value.trim();
+    const targetNode = document.getElementById('targetNode').value.trim();
+    const consoleOutput = document.getElementById('consoleOutput');
+    const loader = document.getElementById('loader');
+
+    if (!localNode) {
+        alert("লোকাল নোড নম্বর প্রদান করুন!");
+        return;
+    }
+
+    if ((action === 'connect' || action === 'disconnect') && !targetNode) {
+        alert("টার্গেট নোড নম্বর প্রদান করুন!");
+        return;
+    }
+
+    loader.style.display = "inline";
+    consoleOutput.innerText = "কমান্ড পাঠানো হচ্ছে...";
+
+    try {
+        const response = await fetch('api.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                action: action,
+                localNode: localNode,
+                targetNode: targetNode
+            })
+        });
+
+        const data = await response.json();
+        loader.style.display = "none";
+
+        if (data.status === 'success') {
+            consoleOutput.innerText = data.output ? data.output : "Action completed successfully.";
+        } else {
+            consoleOutput.innerText = "Error: " + (data.message || "Unknown error occurred.");
+        }
+    } catch (error) {
+        loader.style.display = "none";
+        consoleOutput.innerText = "সার্ভারের সাথে সংযোগ স্থাপন করা সম্ভব হয়নি!";
+    }
+}
+</script>
+
+</body>
+</html>
