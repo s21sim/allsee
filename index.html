@@ -3,207 +3,419 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AllSee - AllStarLink Node Controller</title>
+    <title>AllSee — Next-Gen AllStarLink Controller</title>
+    <!-- Google Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0b1120;
-            --card-bg: #1e293b;
-            --input-bg: #0f172a;
-            --border-color: #334155;
+            --bg-base: #060913;
+            --surface-card: rgba(15, 23, 42, 0.75);
+            --surface-border: rgba(255, 255, 255, 0.08);
+            --surface-hover: rgba(255, 255, 255, 0.04);
+            
+            --neon-cyan: #06b6d4;
+            --neon-cyan-glow: rgba(6, 182, 212, 0.25);
+            --neon-green: #10b981;
+            --neon-green-glow: rgba(16, 185, 129, 0.25);
+            --neon-red: #f43f5e;
+            --neon-red-glow: rgba(244, 63, 94, 0.25);
+            --neon-amber: #f59e0b;
+            --neon-amber-glow: rgba(245, 158, 11, 0.25);
+            --neon-blue: #3b82f6;
+            --neon-blue-glow: rgba(59, 130, 246, 0.25);
+
             --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --accent-green: #10b981;
-            --accent-red: #ef4444;
-            --accent-amber: #f59e0b;
-            --accent-cyan: #06b6d4;
-            --accent-blue: #3b82f6;
+            --text-muted: #64748b;
+            --text-sub: #94a3b8;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-primary);
+            background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, var(--bg-base) 65%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 24px 16px;
+            color: var(--text-primary);
+            overflow-x: hidden;
         }
 
-        .dashboard-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
+        /* Ambient Glow Background Effect */
+        .ambient-glow {
+            position: fixed;
+            width: 350px;
+            height: 350px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--neon-cyan-glow), transparent 70%);
+            top: 10%;
+            filter: blur(80px);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .dashboard-container {
+            position: relative;
+            z-index: 1;
             width: 100%;
-            max-width: 500px;
-            padding: 24px;
-            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.6);
+            max-width: 460px;
+            background: var(--surface-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--surface-border);
+            border-radius: 24px;
+            padding: 28px 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8),
+                        0 0 0 1px rgba(255, 255, 255, 0.05);
         }
 
+        /* Top Header */
         .header {
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--surface-border);
         }
 
-        .header h1 {
-            font-size: 24px;
-            color: var(--accent-cyan);
-            letter-spacing: 0.5px;
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-logo {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(59, 130, 246, 0.2));
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 0 15px var(--neon-cyan-glow);
+        }
+
+        .header-title h1 {
+            font-size: 19px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .header-title h1 span {
+            color: var(--neon-cyan);
+        }
+
+        .header-title p {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .live-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--neon-green);
+        }
+
+        .pulse-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: var(--neon-green);
+            box-shadow: 0 0 8px var(--neon-green);
+            animation: pulse 1.8s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.9); opacity: 0.7; }
+            50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 12px var(--neon-green); }
+            100% { transform: scale(0.9); opacity: 0.7; }
+        }
+
+        /* Inputs Grid */
+        .inputs-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .input-card {
+            background: rgba(2, 6, 23, 0.6);
+            border: 1px solid var(--surface-border);
+            border-radius: 14px;
+            padding: 10px 14px;
+            transition: all 0.25s ease;
+        }
+
+        .input-card:focus-within {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 16px var(--neon-cyan-glow);
+            background: rgba(2, 6, 23, 0.9);
+        }
+
+        .input-card label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .input-card input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #ffffff;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .input-card input::placeholder {
+            color: #334155;
+            font-weight: 400;
+        }
+
+        /* Controls Grid */
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        .btn {
+            position: relative;
+            padding: 13px 16px;
+            border-radius: 14px;
+            border: 1px solid transparent;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            overflow: hidden;
         }
 
-        .header p {
-            font-size: 13px;
-            color: var(--text-secondary);
-            margin-top: 4px;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .form-group input {
-            width: 100%;
-            background-color: var(--input-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 12px 14px;
-            font-size: 16px;
-            color: var(--text-primary);
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .form-group input:focus {
-            border-color: var(--accent-cyan);
-        }
-
-        .button-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-top: 20px;
-        }
-
-        button {
-            padding: 12px 14px;
-            font-size: 14px;
-            font-weight: 600;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #ffffff;
-        }
-
-        button:active {
-            transform: scale(0.98);
+        .btn:active {
+            transform: scale(0.97);
         }
 
         .btn-connect {
-            background-color: var(--accent-green);
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.08));
+            border-color: rgba(16, 185, 129, 0.4);
+            color: #34d399;
         }
-        .btn-connect:hover { background-color: #059669; }
+        .btn-connect:hover {
+            background: var(--neon-green);
+            color: #022c22;
+            box-shadow: 0 0 20px var(--neon-green-glow);
+        }
 
         .btn-disconnect {
-            background-color: var(--accent-red);
+            background: linear-gradient(135deg, rgba(244, 63, 94, 0.2), rgba(244, 63, 94, 0.08));
+            border-color: rgba(244, 63, 94, 0.4);
+            color: #fb7185;
         }
-        .btn-disconnect:hover { background-color: #dc2626; }
+        .btn-disconnect:hover {
+            background: var(--neon-red);
+            color: #4c0519;
+            box-shadow: 0 0 20px var(--neon-red-glow);
+        }
 
-        .btn-disconnect-all {
-            background-color: var(--accent-amber);
+        .btn-all {
             grid-column: span 2;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05));
+            border-color: rgba(245, 158, 11, 0.3);
+            color: #fbbf24;
         }
-        .btn-disconnect-all:hover { background-color: #d97706; }
+        .btn-all:hover {
+            background: var(--neon-amber);
+            color: #451a03;
+            box-shadow: 0 0 20px var(--neon-amber-glow);
+        }
 
         .btn-status {
-            background-color: var(--accent-blue);
             grid-column: span 2;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));
+            border-color: rgba(59, 130, 246, 0.3);
+            color: #60a5fa;
         }
-        .btn-status:hover { background-color: #2563eb; }
-
-        .console-container {
-            margin-top: 24px;
+        .btn-status:hover {
+            background: var(--neon-blue);
+            color: #082f49;
+            box-shadow: 0 0 20px var(--neon-blue-glow);
         }
 
-        .console-header {
-            font-size: 12px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
+        /* Terminal Console */
+        .terminal-panel {
+            background: #030712;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        .terminal-header {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 8px 14px;
             display: flex;
+            align-items: center;
             justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .console-box {
-            background-color: #000000;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 12px;
-            font-family: "Courier New", Courier, monospace;
-            font-size: 13px;
-            color: #38bdf8;
-            height: 120px;
+        .terminal-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #334155;
+        }
+        .dot.r { background: #f43f5e; }
+        .dot.y { background: #f59e0b; }
+        .dot.g { background: #10b981; }
+
+        .terminal-title {
+            font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .terminal-loader {
+            font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--neon-cyan);
+            display: none;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .terminal-body {
+            padding: 14px;
+            min-height: 100px;
+            max-height: 140px;
             overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12.5px;
+            line-height: 1.5;
+            color: #38bdf8;
             white-space: pre-wrap;
-            word-break: break-word;
+            word-break: break-all;
+        }
+
+        /* Scrollbar */
+        .terminal-body::-webkit-scrollbar {
+            width: 4px;
+        }
+        .terminal-body::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
         }
     </style>
 </head>
 <body>
 
-<div class="dashboard-card">
+<div class="ambient-glow"></div>
+
+<div class="dashboard-container">
+    <!-- Header -->
     <div class="header">
-        <h1>📻 AllSee Controller</h1>
-        <p>AllStarLink Easy Control Panel</p>
-    </div>
-
-    <div class="form-group">
-        <label for="localNode">Local Node</label>
-        <input type="number" id="localNode" placeholder="আপনার লোকাল নোড (e.g. 50000)" value="50000">
-    </div>
-
-    <div class="form-group">
-        <label for="targetNode">Target Node</label>
-        <input type="number" id="targetNode" placeholder="টার্গেট নোড (e.g. 1999)">
-    </div>
-
-    <div class="button-grid">
-        <button class="btn-connect" onclick="executeCommand('connect')">Connect</button>
-        <button class="btn-disconnect" onclick="executeCommand('disconnect')">Disconnect</button>
-        <button class="btn-disconnect-all" onclick="executeCommand('disconnect_all')">Disconnect All</button>
-        <button class="btn-status" onclick="executeCommand('status')">Check Status</button>
-    </div>
-
-    <div class="console-container">
-        <div class="console-header">
-            <span>Terminal Output</span>
-            <span id="loader" style="display:none; color: var(--accent-cyan);">Executing...</span>
+        <div class="header-left">
+            <div class="header-logo">⚡</div>
+            <div class="header-title">
+                <h1>All<span>See</span></h1>
+                <p>Node Web Interface</p>
+            </div>
         </div>
-        <div class="console-box" id="consoleOutput">সিস্টেম প্রস্তুত...</div>
+        <div class="live-badge">
+            <div class="pulse-dot"></div>
+            ONLINE
+        </div>
+    </div>
+
+    <!-- Node Form Inputs -->
+    <div class="inputs-container">
+        <div class="input-card">
+            <label for="localNode">Local Node</label>
+            <input type="number" id="localNode" placeholder="50000" value="50000">
+        </div>
+        <div class="input-card">
+            <label for="targetNode">Target Node</label>
+            <input type="number" id="targetNode" placeholder="1999">
+        </div>
+    </div>
+
+    <!-- Control Buttons -->
+    <div class="controls-grid">
+        <button class="btn btn-connect" onclick="executeCommand('connect')">
+            <span>●</span> Connect (*3)
+        </button>
+        <button class="btn btn-disconnect" onclick="executeCommand('disconnect')">
+            <span>■</span> Disconnect (*1)
+        </button>
+        <button class="btn btn-all" onclick="executeCommand('disconnect_all')">
+            <span>✕</span> Disconnect All (*76)
+        </button>
+        <button class="btn btn-status" onclick="executeCommand('status')">
+            <span>◈</span> Check Node Status
+        </button>
+    </div>
+
+    <!-- Terminal Shell Screen -->
+    <div class="terminal-panel">
+        <div class="terminal-header">
+            <div class="terminal-dots">
+                <span class="dot r"></span>
+                <span class="dot y"></span>
+                <span class="dot g"></span>
+            </div>
+            <span class="terminal-title">cli@allstarlink:~</span>
+            <span class="terminal-loader" id="loader">Executing...</span>
+        </div>
+        <div class="terminal-body" id="consoleOutput">System initialized. Ready for command...</div>
     </div>
 </div>
 
@@ -215,7 +427,7 @@ async function executeCommand(action) {
     const loader = document.getElementById('loader');
 
     if (!localNode) {
-        alert("লোকাল নোড নম্বর প্রদান করুন!");
+        alert("দয়া করে লোকাল নোড নম্বর প্রদান করুন!");
         return;
     }
 
@@ -225,7 +437,7 @@ async function executeCommand(action) {
     }
 
     loader.style.display = "inline";
-    consoleOutput.innerText = "কমান্ড পাঠানো হচ্ছে...";
+    consoleOutput.innerText = "> কমান্ড প্রসেস করা হচ্ছে...";
 
     try {
         const response = await fetch('api.php', {
@@ -244,13 +456,13 @@ async function executeCommand(action) {
         loader.style.display = "none";
 
         if (data.status === 'success') {
-            consoleOutput.innerText = data.output ? data.output : "Action completed successfully.";
+            consoleOutput.innerText = data.output ? data.output : "> কমান্ড সফলভাবে এক্সিকিউট হয়েছে।";
         } else {
-            consoleOutput.innerText = "Error: " + (data.message || "Unknown error occurred.");
+            consoleOutput.innerText = "! Error: " + (data.message || "Unknown error occurred.");
         }
     } catch (error) {
         loader.style.display = "none";
-        consoleOutput.innerText = "সার্ভারের সাথে সংযোগ স্থাপন করা সম্ভব হয়নি!";
+        consoleOutput.innerText = "! সার্ভারের সাথে সংযোগ বিচ্ছিন্ন হয়েছে। দয়া করে নোড চেক করুন।";
     }
 }
 </script>
